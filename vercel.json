@@ -1,0 +1,9 @@
+{
+  "devCommand": "npm --prefix client run dev -- --port $PORT",
+  "buildCommand": "npm --prefix client run build",
+  "outputDirectory": "client/dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/[...path].js" }
+  ]
+}

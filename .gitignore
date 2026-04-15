@@ -1,0 +1,8 @@
+node_modules
+.env
+.env.local
+.env.*
+.DS_Store
+.vercel
+*.log
+iep-desk-2026-firebase-adminsdk-fbsvc-8061c7e663.json

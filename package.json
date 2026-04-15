@@ -1,0 +1,16 @@
+{
+  "name": "iep-desk",
+  "private": true,
+  "type": "module",
+  "workspaces": ["client"],
+  "scripts": {
+    "build": "npm --prefix client run build",
+    "dev": "npm --prefix client run dev"
+  },
+  "dependencies": {
+    "cloudinary": "^2.5.1",
+    "firebase-admin": "^12.5.0",
+    "formidable": "^3.5.1",
+    "mongoose": "^8.5.4"
+  }
+}
