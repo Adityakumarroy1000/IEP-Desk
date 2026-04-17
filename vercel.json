@@ -6,6 +6,7 @@
   "outputDirectory": "client/dist",
   "framework": "vite",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/[...path].js" }
+    { "source": "/api/(.*)", "destination": "/api/[...path].js" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
