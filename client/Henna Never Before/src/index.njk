@@ -1,0 +1,169 @@
+---
+layout: base.njk
+---
+
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <p class="eyebrow">Premium Henna � Clean Ingredients � Deep Stain</p>
+      <h1>Elevate every celebration with henna that looks as rich as it feels.</h1>
+      <p class="hero-copy">Artisan blended cones with a smooth glide, fast drying, and a deep maroon stain. Created for brides, artists, and modern minimalists who want a flawless finish.</p>
+      <div class="hero-actions">
+        <a class="btn btn-solid" href="/products/">Browse Products</a>
+        <a class="btn btn-outline" href="/services/">View Services</a>
+      </div>
+      <div class="trust-row">
+        <div>
+          <p class="trust-value">48 hrs</p>
+          <p class="muted">Peak stain time</p>
+        </div>
+        <div>
+          <p class="trust-value">100% Natural</p>
+          <p class="muted">No additives</p>
+        </div>
+        <div>
+          <p class="trust-value">4.9/5</p>
+          <p class="muted">Customer rating</p>
+        </div>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-badge">Bundle Offer</div>
+      <h3>Bridal Glow Kit</h3>
+      <p class="muted">4 Special Regular Cone + Premium Nail Tint + Herbal Hair Pack</p>
+      <div class="price">650 BDT<span>730 BDT</span></div>
+      <ul class="checklist">
+        <li>Rich maroon finish</li>
+        <li>Stays vibrant for 10+ days</li>
+        <li>Gift-ready packaging</li>
+      </ul>
+      <a class="btn btn-solid btn-full" href="/products/">Reserve Kit</a>
+    </div>
+  </div>
+</section>
+
+
+
+{% for item in products | slice(0, 4) %}
+<div class="lightbox" id="lightbox-home-{{ loop.index }}">
+  <a class="lightbox-close" href="#home-products" aria-label="Close image">Close</a>
+  <div class="lightbox-content">
+    <img src="{{ item.image }}" alt="{{ item.name }}" />
+    <div class="lightbox-caption">
+      <h3>{{ item.name }}</h3>
+      <p class="muted">{{ item.desc }}</p>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<section class="section craft" id="home-products">
+  <div class="container craft-grid">
+    <div>
+      <h2>Our Craft Promise</h2>
+      <p class="muted">We blend henna the same day it ships, so your stain is bold and consistent. Every batch is tested for stain depth, aroma, and glide.</p>
+      <div class="craft-points">
+        <div>
+          <h4>Freshness Guaranteed</h4>
+          <p class="muted">Small-batch blending means peak stain power on arrival.</p>
+        </div>
+        <div>
+          <h4>Safe &amp; Skin-Friendly</h4>
+          <p class="muted">No metallic salts, no artificial dyes, no shortcuts.</p>
+        </div>
+      </div>
+    </div>
+    <div class="craft-panel">
+      <h3>Client Results</h3>
+      <p class="muted">�The stain was visible within 6 hours and reached a rich maroon by day two. I�ll never switch.�</p>
+      <div class="profile">
+        <div class="avatar"></div>
+        <div>
+          <p class="profile-name">Aisha R.</p>
+          <p class="muted">Bridal client � Dhaka</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div>
+          <p class="trust-value">92%</p>
+          <p class="muted">Repeat buyers</p>
+        </div>
+        <div>
+          <p class="trust-value">24 hr</p>
+          <p class="muted">Dispatch time</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section services-preview">
+  <div class="container">
+    <div class="center-actions">
+      <a class="btn btn-solid" href="/services/">View All Services</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h2>Why clients choose us</h2>
+      <p class="muted">Confidence-building details that make the decision easy.</p>
+    </div>
+    <div class="review-grid">
+      <div class="review-card">
+        <p class="review-title">Flawless stain</p>
+        <p class="muted">�Deep color by day two and it stayed for 11 days.�</p>
+      </div>
+      <div class="review-card">
+        <p class="review-title">Luxury packaging</p>
+        <p class="muted">�Gifted the celebration box and it felt so premium.�</p>
+      </div>
+      <div class="review-card">
+        <p class="review-title">Zero irritation</p>
+        <p class="muted">�Sensitive skin friendly � no itching or dryness.�</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section faq">
+  <div class="container">
+    <div class="section-head">
+      <h2>FAQ</h2>
+      <p class="muted">Transparent details to help you order with confidence.</p>
+    </div>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h4>How long does the stain last?</h4>
+        <p class="muted">7�12 days depending on skin prep, aftercare, and exposure to water.</p>
+      </div>
+      <div class="faq-item">
+        <h4>How do I store the cone?</h4>
+        <p class="muted">Keep it refrigerated for up to 7 days or freeze for 3 months.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Do you ship nationally?</h4>
+        <p class="muted">Yes � shipping is available nationwide with tracking.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Can I order in bulk?</h4>
+        <p class="muted">Yes. Bulk orders receive priority blending and discounted pricing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="container cta-inner">
+    <div>
+      <h2>Ready for a richer stain?</h2>
+      <p class="muted">We�ll help you choose the right set for your event.</p>
+    </div>
+    <div class="cta-actions">
+      <a class="btn btn-solid" href="/contact/">Start Order</a>
+      <a class="btn btn-ghost" href="/contact/">Talk to a Specialist</a>
+    </div>
+  </div>
+</section>
+

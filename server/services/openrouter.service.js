@@ -1,10 +1,17 @@
 ﻿import { LEGAL_DISCLAIMER } from "./disclaimer.js";
 
-const MODELS = [
-  "meta-llama/llama-4-maverick:free",
-  "google/gemini-2.0-flash-exp:free",
-  "mistral/mistral-7b-instruct:free"
-];
+function getModels() {
+  const configuredList = (process.env.OPENROUTER_MODELS || "")
+    .split(",")
+    .map((model) => model.trim())
+    .filter(Boolean);
+  if (configuredList.length) return configuredList;
+
+  const singleModel = (process.env.OPENROUTER_MODEL || "").trim();
+  if (singleModel) return [singleModel];
+
+  return ["openrouter/free"];
+}
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -56,9 +63,10 @@ async function callModel(model, prompt) {
 }
 
 export async function runOpenRouter(prompt) {
+  const models = getModels();
   let lastError;
-  for (let i = 0; i < MODELS.length; i += 1) {
-    const model = MODELS[i];
+  for (let i = 0; i < models.length; i += 1) {
+    const model = models[i];
     try {
       const raw = await callModel(model, prompt);
       const parsed = extractJson(raw);

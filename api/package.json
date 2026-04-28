@@ -1,0 +1,11 @@
+{
+  "name": "iep-desk-api",
+  "version": "1.0.0",
+  "packageManager": "npm@10",
+  "type": "module",
+  "dependencies": {
+    "cloudinary": "^2.5.1",
+    "firebase-admin": "^12.5.0",
+    "formidable": "^3.5.1"
+  }
+}

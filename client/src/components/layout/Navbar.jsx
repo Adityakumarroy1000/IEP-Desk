@@ -105,6 +105,22 @@ export default function Navbar() {
                     >
                       Settings
                     </Link>
+                    <Link
+                      to="/analyses"
+                      onClick={() => setMenuOpen(false)}
+                      className="mt-1 flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 hover:text-primary"
+                      role="menuitem"
+                    >
+                      Your analyzed IEP
+                    </Link>
+                    <Link
+                      to="/meeting-preps"
+                      onClick={() => setMenuOpen(false)}
+                      className="mt-1 flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 hover:text-primary"
+                      role="menuitem"
+                    >
+                      Your meeting preps
+                    </Link>
                     <button
                       type="button"
                       onClick={() => {

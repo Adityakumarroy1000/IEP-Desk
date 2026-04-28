@@ -1,33 +1,41 @@
-﻿# IEP Desk
+# IEP Desk
 
-Full-stack MERN application to help parents understand IEPs with AI analysis, rights breakdowns, and meeting prep kits.
+Serverless app to help families understand IEPs with AI analysis, rights breakdowns, and meeting prep kits.
 
 ## Structure
 - `client/` React + Vite frontend
-- `api/` Vercel Serverless API (single-repo deploy)
-- `server/` Express backend (legacy local-only; not used in Vercel deploy)
+- `api/` Serverless API handlers (Firebase + Firestore, used by Vercel and local serverless dev)
+- `server/` Legacy Express + Mongo path (not required for current serverless flow)
 
-## Local Setup (Vercel-style)
-1. Copy environment files:
-   - `server/.env.example` -> `.env` (root for Vercel API)
-   - `client/.env.example` -> `client/.env`
-2. Install dependencies:
+## Local Serverless Setup (No MongoDB)
+1. Configure root `.env` with serverless API variables:
+   - `FIREBASE_PROJECT_ID`
+   - `FIREBASE_CLIENT_EMAIL`
+   - `FIREBASE_PRIVATE_KEY`
+   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_API_KEY`
+   - `CLOUDINARY_API_SECRET`
+   - `OPENROUTER_API_KEY`
+   - `CLIENT_URL=http://localhost:5173`
+2. Configure `client/.env` with Firebase client keys.
+3. Install dependencies:
    - `npm.cmd install`
-   - `cd client && npm.cmd install`
-3. Run frontend:
-   - `cd client && npm.cmd run dev`
+   - `npm.cmd --prefix client install`
+4. Run serverless API locally:
+   - `npm.cmd run dev:api`
+5. Run frontend:
+   - `npm.cmd run dev:client`
 
-For local API testing, use Vercel dev or set `VITE_API_URL` to your deployed URL.
+Frontend runs on `http://localhost:5173`, API runs on `http://localhost:3000`, and Vite proxies `/api` automatically.
 
-## Deployment (Vercel Only)
-1. Push the repo to GitHub
-2. Import into Vercel
-3. Add **all server env vars** in Vercel Project Settings (from `server/.env.example`)
-4. Add **VITE_* client env vars** in Vercel
+## Deploy (Vercel)
+1. Push repo to GitHub
+2. Import to Vercel
+3. Add root API env vars in Vercel Project Settings
+4. Add `VITE_*` vars for client
 5. Deploy
 
-Vercel will build `client/` and serve API routes from `/api`.
-
 ## Notes
-- All AI endpoints require Firebase auth tokens.
-- Legal disclaimer is enforced on every AI response.
+- API auth requires Firebase ID tokens.
+- Data persistence is Firestore (not MongoDB).
+- Legal disclaimer is enforced on AI responses.

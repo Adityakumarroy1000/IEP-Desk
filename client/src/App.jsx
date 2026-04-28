@@ -42,8 +42,10 @@ export default function App() {
       <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/analyzer" element={<RequireAuth><Analyzer /></RequireAuth>} />
+      <Route path="/analyses" element={<RequireAuth><Analyzer /></RequireAuth>} />
       <Route path="/rights" element={<RequireAuth><Rights /></RequireAuth>} />
       <Route path="/meeting-prep" element={<RequireAuth><MeetingPrep /></RequireAuth>} />
+      <Route path="/meeting-preps" element={<RequireAuth><MeetingPrep /></RequireAuth>} />
       <Route path="/documents" element={<RequireAuth><Documents /></RequireAuth>} />
       <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
 

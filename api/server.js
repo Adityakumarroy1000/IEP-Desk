@@ -53,6 +53,14 @@ function sanitize(value) {
   return typeof value === "string" ? value.trim() : value;
 }
 
+function slugify(value) {
+  return String(value || "child")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    || "child";
+}
+
 function requireString(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
@@ -83,6 +91,26 @@ function serialize(value) {
     return out;
   }
   return value;
+}
+
+function parsePossibleJson(value) {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  if (!trimmed) return value;
+  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return value;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return value;
+  }
+}
+
+function withParsedResult(record) {
+  if (!record || typeof record !== "object") return record;
+  return {
+    ...record,
+    result: parsePossibleJson(record.result)
+  };
 }
 
 async function deleteWhere(db, collection, field, value) {
@@ -316,7 +344,7 @@ export default async function handler(req, res) {
         .limit(1)
         .get();
       if (!cachedSnap.empty) {
-        const cached = mapDoc(cachedSnap.docs[0]);
+        const cached = withParsedResult(mapDoc(cachedSnap.docs[0]));
         return send(res, 200, serialize(cached.result));
       }
 
@@ -338,9 +366,18 @@ export default async function handler(req, res) {
 
       const prompt = buildAnalyzeIEPPrompt({ profile, extractedText });
       const result = await runOpenRouter(prompt);
+      const existingCountSnap = await db.collection("analyses")
+        .where("userId", "==", user._id)
+        .where("profileId", "==", profileId)
+        .count()
+        .get();
+      const analysisNumber = (existingCountSnap.data()?.count || 0) + 1;
+      const analysisKey = `${slugify(profile.childName)}-ieppdfana${String(analysisNumber).padStart(3, "0")}`;
       await db.collection("analyses").add({
         userId: user._id,
         profileId,
+        analysisNumber,
+        analysisKey,
         documentUrl,
         documentName,
         rawText: extractedText,
@@ -356,10 +393,21 @@ export default async function handler(req, res) {
       const snap = await db.collection("analyses")
         .where("userId", "==", user._id)
         .where("profileId", "==", id)
-        .orderBy("createdAt", "desc")
         .get();
-      const analyses = snap.docs.map(mapDoc).map(serialize);
+      const analyses = snap.docs.map(mapDoc).map(withParsedResult).map(serialize);
+      analyses.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
       return send(res, 200, analyses);
+    }
+
+    if (resource === "analyze" && id && req.method === "DELETE") {
+      const user = await requireAuth(req);
+      const analysisRef = db.collection("analyses").doc(id);
+      const analysis = await analysisRef.get();
+      if (!analysis.exists || analysis.data()?.userId !== user._id) {
+        return send(res, 404, { message: "Analysis not found" });
+      }
+      await analysisRef.delete();
+      return send(res, 200, { message: "Deleted" });
     }
 
     // Rights
@@ -380,7 +428,7 @@ export default async function handler(req, res) {
         .limit(1)
         .get();
       if (!cachedSnap.empty) {
-        const cached = mapDoc(cachedSnap.docs[0]);
+        const cached = withParsedResult(mapDoc(cachedSnap.docs[0]));
         return send(res, 200, serialize(cached.result));
       }
       const prompt = buildRightsPrompt({ profile });
@@ -406,7 +454,12 @@ export default async function handler(req, res) {
       if (!profileDoc.exists || profileDoc.data()?.userId !== user._id) return send(res, 404, { message: "Profile not found" });
       const profile = mapDoc(profileDoc);
       const analysis = analysisId ? await db.collection("analyses").doc(analysisId).get() : null;
-      const analysisResult = analysis && analysis.exists ? analysis.data()?.result : null;
+      if (analysisId) {
+        const analysisData = analysis && analysis.exists ? analysis.data() : null;
+        const invalidAnalysis = !analysisData || analysisData.userId !== user._id || analysisData.profileId !== profileId;
+        if (invalidAnalysis) return send(res, 404, { message: "Analysis not found for selected profile" });
+      }
+      const analysisResult = analysis && analysis.exists ? parsePossibleJson(analysis.data()?.result) : null;
       const cacheKey = crypto.createHash("sha256").update(`${profileId}-${analysisId || "none"}-${meetingType}`).digest("hex");
       const cachedSnap = await db.collection("meetingPreps")
         .where("userId", "==", user._id)
@@ -415,7 +468,7 @@ export default async function handler(req, res) {
         .limit(1)
         .get();
       if (!cachedSnap.empty) {
-        const cached = mapDoc(cachedSnap.docs[0]);
+        const cached = withParsedResult(mapDoc(cachedSnap.docs[0]));
         return send(res, 200, serialize(cached.result));
       }
       const prompt = buildMeetingPrompt({ profile, analysis: analysisResult, meetingType });
@@ -431,6 +484,26 @@ export default async function handler(req, res) {
       });
       return send(res, 200, serialize(result));
     }
+    if (resource === "meeting-prep" && id && req.method === "GET") {
+      const user = await requireAuth(req);
+      const snap = await db.collection("meetingPreps")
+        .where("userId", "==", user._id)
+        .where("profileId", "==", id)
+        .orderBy("createdAt", "desc")
+        .get();
+      const docs = snap.docs.map(mapDoc).map(withParsedResult).map(serialize);
+      return send(res, 200, docs);
+    }
+    if (resource === "meeting-prep" && req.method === "DELETE" && id) {
+      const user = await requireAuth(req);
+      const docRef = db.collection("meetingPreps").doc(id);
+      const doc = await docRef.get();
+      if (!doc.exists || doc.data()?.userId !== user._id) {
+        return send(res, 404, { message: "Meeting prep not found" });
+      }
+      await docRef.delete();
+      return send(res, 200, { message: "Deleted" });
+    }
 
     // Documents
     if (resource === "documents" && id && req.method === "GET") {
@@ -438,9 +511,9 @@ export default async function handler(req, res) {
       const snap = await db.collection("documents")
         .where("userId", "==", user._id)
         .where("profileId", "==", id)
-        .orderBy("createdAt", "desc")
         .get();
       const docs = snap.docs.map(mapDoc).map(serialize);
+      docs.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
       return send(res, 200, docs);
     }
     if (resource === "documents" && req.method === "POST" && !id) {
@@ -587,7 +660,7 @@ export default async function handler(req, res) {
       const analysesSnap = await db.collection("analyses").orderBy("createdAt", "desc").limit(200).get();
       const results = [];
       for (const doc of analysesSnap.docs) {
-        const analysis = mapDoc(doc);
+        const analysis = withParsedResult(mapDoc(doc));
         const analysisUser = await db.collection("users").doc(analysis.userId).get();
         const profile = await db.collection("profiles").doc(analysis.profileId).get();
         results.push(serialize({

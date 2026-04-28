@@ -1,0 +1,13 @@
+{
+  "name": "henna-never-before",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Henna eCommerce showcase site built with 11ty",
+  "scripts": {
+    "start": "eleventy --serve",
+    "build": "eleventy"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^2.0.1"
+  }
+}

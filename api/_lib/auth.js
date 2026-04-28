@@ -1,4 +1,4 @@
-import { admin, initFirebase } from "../../server/config/firebase.js";
+import { admin, initFirebase } from "./firebase.js";
 
 initFirebase();
 
@@ -25,9 +25,19 @@ export async function requireAuth(req) {
   const docRef = db.collection("users").doc(decoded.uid);
   const snap = await docRef.get();
   if (!snap.exists) {
-    const error = new Error("User not found");
-    error.statusCode = 401;
-    throw error;
+    await docRef.set({
+      firebaseUid: decoded.uid,
+      email: decoded.email || "",
+      name: decoded.name || decoded.email?.split("@")[0] || "User",
+      avatar: decoded.picture || null,
+      avatarPublicId: null,
+      role: "user",
+      plan: "free",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastActive: admin.firestore.FieldValue.serverTimestamp()
+    });
+    const created = await docRef.get();
+    return mapUserDoc(created);
   }
   await docRef.update({ lastActive: admin.firestore.FieldValue.serverTimestamp() });
   return mapUserDoc(snap);

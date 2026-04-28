@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Just For Youuuuuu 💖</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Georgia', serif;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    overflow: hidden;
+}
+
+/* Book Container */
+.book {
+    width: 95%;
+    max-width: 700px;
+    height: 85vh;
+    perspective: 1500px;
+    position: relative;
+}
+
+/* Page Styling */
+.page {
+    width: 100%;
+    height: 100%;
+    background: #fff8f0;
+    position: absolute;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    backface-visibility: hidden;
+    transform-origin: left;
+    transition: transform 1s ease;
+    overflow-y: auto;
+}
+
+/* First Page */
+#page1 {
+    z-index: 2;
+}
+
+/* Second Page */
+#page2 {
+    transform: rotateY(180deg);
+}
+
+/* Flip Effect */
+.book.open #page1 {
+    transform: rotateY(-180deg);
+}
+
+.book.open #page2 {
+    transform: rotateY(0deg);
+}
+
+/* Poem Text */
+.poem {
+    white-space: pre-line;
+    font-size: clamp(14px, 3.5vw, 18px);
+    line-height: 1.8;
+    color: #333;
+}
+
+/* Button to turn page */
+.next-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: #ff4e8a;
+    border: none;
+    color: white;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+/* Proposal Page */
+.proposal {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.proposal h2 {
+    font-size: clamp(20px, 5vw, 28px);
+    margin-bottom: 40px;
+}
+
+.buttons {
+    position: relative;
+    height: 150px;
+}
+
+button {
+    padding: 12px 30px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    position: absolute;
+    transition: 0.3s ease;
+}
+
+#yesBtn {
+    background: #ff006e;
+    color: white;
+    left: 20%;
+}
+
+#noBtn {
+    background: #fff;
+    color: #ff006e;
+    left: 55%;
+}
+
+.message {
+    display: none;
+    margin-top: 20px;
+    font-size: clamp(18px, 5vw, 24px);
+    color: #ff006e;
+    animation: pop 0.6s ease forwards;
+}
+
+@keyframes pop {
+    from {transform: scale(0);}
+    to {transform: scale(1);}
+}
+
+/* Responsive Adjustments */
+@media(max-width: 500px) {
+    .page {
+        padding: 20px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="book" id="book">
+
+    <!-- Page 1 -->
+    <div class="page" id="page1">
+        <h2 style="text-align:center; margin-bottom:20px;">Just For Youuuuuu 💌</h2>
+        <div class="poem">
+প্রাচীর নামে,
+তোমার নামেতে লুকিয়ে আছে প্রাচীন এক গল্প,
+পুরোনো বইয়ের পাতায় হারানো কবিতার মতো।
+প্রাচী, তুমি জানো না হয়তো একটুও জানো না—
+তোমার উপস্থিতিতে পালটে যায় সাধারণ প্রতিটি মুহূর্ত।
+
+কোথাও হঠাৎ দেখা হলে যায় যে মন উড়ে,
+সারাদিনটাই তখন লাগে যায় অন্যরকম।
+তুমি যখন কথা বলো, আমি শুনি মন দিয়ে—
+শুধু শব্দ নয়, শুনি তোমার ভাবনার ছন্দ।
+
+এই বয়সেতে সবাই বলে সব কিছু ক্ষণস্থায়ী শুধু,
+কিন্তু তোমার সাথে কাটানো প্রতিটি মুহূর্ত যেন
+মনে হয় রেখে যাবো চিরকালের স্মৃতি হয়ে।
+প্রাচী, হয়তো ভাবো তুমি নিজেকে সাধারণ কেউ,
+কিন্তু আমার কাছে তুমি অসাধারণ এক মানুষ—
+একদম নিজের মতো, একদম সত্যিকারের তুমি।
+        </div>
+
+        <div style="text-align:center;">
+            <button class="next-btn" onclick="openBook()">Turn Page ➜</button>
+        </div>
+    </div>
+
+    <!-- Page 2 -->
+    <div class="page" id="page2">
+        <div class="proposal">
+            <p>It's an oldy type...</p>
+            <p>.......but........</p>
+            <h2>Will you be my Valentine? 💘</h2>
+
+            <div class="buttons" id="buttonArea">
+                <button id="yesBtn">Yes 💖</button>
+                <button id="noBtn">No 😢</button>
+            </div>
+
+            <div class="message" id="loveMessage">
+                I knew it! 💕 <br> I Love you Soo Much 💘
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const book = document.getElementById("book");
+const noBtn = document.getElementById("noBtn");
+const yesBtn = document.getElementById("yesBtn");
+const message = document.getElementById("loveMessage");
+const buttonArea = document.getElementById("buttonArea");
+
+function openBook() {
+    book.classList.add("open");
+}
+
+// Move No button (desktop + mobile)
+function moveNoButton() {
+    const areaWidth = buttonArea.clientWidth - noBtn.offsetWidth;
+    const areaHeight = buttonArea.clientHeight - noBtn.offsetHeight;
+
+    const randomX = Math.random() * areaWidth;
+    const randomY = Math.random() * areaHeight;
+
+    noBtn.style.left = randomX + "px";
+    noBtn.style.top = randomY + "px";
+}
+
+noBtn.addEventListener("mouseenter", moveNoButton);
+noBtn.addEventListener("touchstart", function(e){
+    e.preventDefault();
+    moveNoButton();
+});
+
+// Yes click
+yesBtn.addEventListener("click", function() {
+    message.style.display = "block";
+    yesBtn.style.display = "none";
+    noBtn.style.display = "none";
+});
+</script>
+
+</body>
+</html>

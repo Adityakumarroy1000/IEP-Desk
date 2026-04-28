@@ -1,0 +1,109 @@
+---
+layout: base.njk
+permalink: /products/
+---
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow">Products</p>
+    <h1>Henna essentials designed for deep, even stain.</h1>
+    <p class="hero-copy">Each blend is crafted fresh and shipped fast, so your designs stay rich and vibrant.</p>
+    <div class="notice">
+      <strong>Preservation:</strong> All henna cones should be stored in a deep freezer for best results.
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="product-grid">
+      {% for item in products %}
+      <article class="product-card">
+        <a class="product-image-link" href="#lightbox-{{ loop.index }}">
+          <img class="product-image" src="{{ item.image }}" alt="{{ item.name }}" />
+        </a>
+        <div class="product-top">
+          <span class="pill">{{ item.badge }}</span>
+          <span class="price">{{ item.price }}</span>
+        </div>
+        <h3>{{ item.name }}</h3>
+        <p class="muted">{{ item.desc }}</p>
+        <div class="product-meta">
+          <span>{{ item.size }}</span>
+          <span>{{ item.ship }}</span>
+        </div>
+        <a class="btn btn-outline btn-full" href="/contact/">Request Order</a>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% for item in products %}
+<div class="lightbox" id="lightbox-{{ loop.index }}">
+  <a class="lightbox-close" href="#products" aria-label="Close image">Close</a>
+  <div class="lightbox-content">
+    <img src="{{ item.image }}" alt="{{ item.name }}" />
+    <div class="lightbox-caption">
+      <h3>{{ item.name }}</h3>
+      <p class="muted">{{ item.desc }}</p>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<section class="section craft" id="products">
+  <div class="container">
+    <div class="section-head">
+      <h2>Herbal Hair Care with Henna Never Before</h2>
+      <p class="muted">The power of natural herbs for strong, healthy hair.</p>
+    </div>
+    <div class="about-grid">
+      <div class="about-card">
+        <h3>What makes it special</h3>
+        <p class="muted">Our Herbal Hair Pack is crafted from traditional herbs trusted for generations.</p>
+        <ul class="about-list">
+          <li>Henna Powder — strengthens roots, adds shine, and conditions hair.</li>
+          <li>Rosemary — supports hair growth and scalp circulation.</li>
+          <li>Fenugreek (Methi) — reduces hair fall and nourishes follicles.</li>
+        </ul>
+      </div>
+      <div class="about-card">
+        <h3>Benefits</h3>
+        <ul class="about-list">
+          <li>Helps reduce hair fall</li>
+          <li>Strengthens weak hair roots</li>
+          <li>Improves hair thickness</li>
+          <li>Adds natural shine and softness</li>
+          <li>Supports a healthy scalp</li>
+        </ul>
+        <p class="muted">Weight: 100 gm</p>
+      </div>
+      <div class="about-card">
+        <h3>How to use</h3>
+        <ol class="about-list">
+          <li>Take the required amount of herbal powder.</li>
+          <li>Mix with warm water to make a smooth paste.</li>
+          <li>Apply evenly on scalp and hair.</li>
+          <li>Leave for 30–45 minutes.</li>
+          <li>Rinse with water.</li>
+          <li>For best results, use once a week.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="container cta-inner">
+    <div>
+      <h2>Need a bulk order?</h2>
+      <p class="muted">We create tailored blends and prioritize studio schedules.</p>
+    </div>
+    <div class="cta-actions">
+      <a class="btn btn-solid" href="/contact/">Ask for Pricing</a>
+      <a class="btn btn-ghost" href="/services/">View Services</a>
+    </div>
+  </div>
+</section>
+

@@ -16,6 +16,7 @@ export default function Dashboard() {
   const { profiles, setProfiles, activeProfileId, setActiveProfileId } = useProfile();
   const [analyses, setAnalyses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [recentMeetingPreps, setRecentMeetingPreps] = useState([]);
 
   useEffect(() => {
     const load = async () => {
@@ -28,6 +29,15 @@ export default function Dashboard() {
         if (profileData?.length) {
           const list = await api.get(`/analyze/${profileData[0]._id}`);
           setAnalyses(list || []);
+          
+          // Load recent meeting preps
+          try {
+            const meetingPrepList = await api.get(`/meeting-prep/${profileData[0]._id}`);
+            setRecentMeetingPreps(meetingPrepList || []);
+          } catch (err) {
+            console.error("Failed to load meeting preps:", err);
+            setRecentMeetingPreps([]);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -76,7 +86,30 @@ export default function Dashboard() {
               />
             </div>
             {activeProfile ? (
-              <ProfileCard profile={activeProfile} />
+              <div className="grid gap-3">
+                {profiles.length > 1 ? (
+                  <Card className="bg-white/80">
+                    <label className="block text-sm text-gray-700">
+                      <span className="mb-2 block text-sm text-gray-600">Active Child</span>
+                      <select
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3"
+                        value={activeProfileId || activeProfile._id}
+                        onChange={(e) => setActiveProfileId(e.target.value)}
+                      >
+                        {profiles.map((p) => (
+                          <option key={p._id} value={p._id}>
+                            {p.childName} ({p.grade} - {p.state})
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </Card>
+                ) : null}
+                <ProfileCard profile={activeProfile} />
+                <div>
+                  <a className="text-sm font-semibold text-primary" href="/profile">Manage child profiles -&gt;</a>
+                </div>
+              </div>
             ) : (
               <Card className="border-primary/20 bg-white/85">
                 <h3 className="text-lg font-semibold text-gray-800">Create your first child profile</h3>
@@ -89,13 +122,12 @@ export default function Dashboard() {
             <Card>
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-800">Recent Analyses</h3>
-                <a className="text-xs font-semibold text-primary" href="/analyzer">View all</a>
               </div>
               <div className="mt-4 space-y-2 text-sm text-gray-600">
                 {recent.length ? recent.map((a) => (
                   <div key={a._id} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white/70 px-3 py-2">
                     <div>
-                      <div className="font-semibold text-gray-800">{a.documentName || "IEP Analysis"}</div>
+                      <div className="font-semibold text-gray-800">{a.analysisKey || a.documentName || "IEP Analysis"}</div>
                       <div className="text-xs text-gray-500">{new Date(a.createdAt).toLocaleDateString()}</div>
                     </div>
                     <span className="rounded-full bg-primary-light px-2 py-1 text-xs font-semibold text-primary">
@@ -104,6 +136,26 @@ export default function Dashboard() {
                   </div>
                 )) : (
                   <p className="text-sm text-gray-500">No analyses yet.</p>
+                )}
+              </div>
+            </Card>
+            <Card>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-800">Recent Meeting Preps</h3>
+              </div>
+              <div className="mt-4 space-y-2 text-sm text-gray-600">
+                {recentMeetingPreps.length ? recentMeetingPreps.map((prep) => (
+                  <div key={prep._id} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white/70 px-3 py-2">
+                    <div>
+                      <div className="font-semibold text-gray-800">{prep.meetingType || "Meeting Prep"}</div>
+                      <div className="text-xs text-gray-500">{new Date(prep.createdAt).toLocaleDateString()}</div>
+                    </div>
+                    <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">
+                      {prep.profileName}
+                    </span>
+                  </div>
+                )) : (
+                  <p className="text-sm text-gray-500">No meeting preps yet.</p>
                 )}
               </div>
             </Card>

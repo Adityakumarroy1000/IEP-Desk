@@ -2,13 +2,13 @@ import crypto from "crypto";
 import { parseJsonBody, parseMultipart } from "./_lib/body.js";
 import { requireAuth, verifyFirebaseToken, requireAdmin } from "./_lib/auth.js";
 import { checkRateLimit } from "./_lib/rate.js";
-import { initCloudinary } from "../server/config/cloudinary.js";
-import { admin, initFirebase } from "../server/config/firebase.js";
-import { uploadBuffer, uploadFromUrl, deleteFile } from "../server/services/cloudinary.service.js";
-import { runOpenRouter } from "../server/services/openrouter.service.js";
-import { buildAnalyzeIEPPrompt } from "../server/prompts/analyzeIEP.js";
-import { buildRightsPrompt } from "../server/prompts/rightsEngine.js";
-import { buildMeetingPrompt } from "../server/prompts/meetingPrep.js";
+import { initCloudinary } from "./_lib/cloudinary.js";
+import { admin, initFirebase } from "./_lib/firebase.js";
+import { uploadBuffer, uploadFromUrl, deleteFile } from "./_lib/cloudinary.service.js";
+import { runOpenRouter } from "./_lib/openrouter.service.js";
+import { buildAnalyzeIEPPrompt } from "./_lib/analyzeIEP.js";
+import { buildRightsPrompt } from "./_lib/rightsEngine.js";
+import { buildMeetingPrompt } from "./_lib/meetingPrep.js";
 
 const ALLOWED_DOC_TYPES = ["IEP", "504", "Evaluation", "Email", "Meeting Notes", "Other"];
 const ALLOWED_FILE_TYPES = ["application/pdf", "image/png", "image/jpg", "image/jpeg"];
@@ -53,6 +53,14 @@ function sanitize(value) {
   return typeof value === "string" ? value.trim() : value;
 }
 
+function slugify(value) {
+  return String(value || "child")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    || "child";
+}
+
 function requireString(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
@@ -83,6 +91,26 @@ function serialize(value) {
     return out;
   }
   return value;
+}
+
+function parsePossibleJson(value) {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  if (!trimmed) return value;
+  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return value;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return value;
+  }
+}
+
+function withParsedResult(record) {
+  if (!record || typeof record !== "object") return record;
+  return {
+    ...record,
+    result: parsePossibleJson(record.result)
+  };
 }
 
 async function deleteWhere(db, collection, field, value) {
@@ -300,7 +328,7 @@ export default async function handler(req, res) {
       const user = await requireAuth(req);
       checkRateLimit(user._id.toString());
       const { fields, files } = await parseMultipart(req);
-      const profileId = fields.profileId?.[0] || fields.profileId;
+      const profileId = fields.profileId?.[0] || fields["profileId "]?.[0] || fields.profileId || fields["profileId "];
       const extractedText = fields.extractedText?.[0] || fields.extractedText;
       if (!profileId || !extractedText) return send(res, 400, { message: "Missing profileId or extractedText" });
 
@@ -316,7 +344,7 @@ export default async function handler(req, res) {
         .limit(1)
         .get();
       if (!cachedSnap.empty) {
-        const cached = mapDoc(cachedSnap.docs[0]);
+        const cached = withParsedResult(mapDoc(cachedSnap.docs[0]));
         return send(res, 200, serialize(cached.result));
       }
 
@@ -338,9 +366,18 @@ export default async function handler(req, res) {
 
       const prompt = buildAnalyzeIEPPrompt({ profile, extractedText });
       const result = await runOpenRouter(prompt);
+      const existingCountSnap = await db.collection("analyses")
+        .where("userId", "==", user._id)
+        .where("profileId", "==", profileId)
+        .count()
+        .get();
+      const analysisNumber = (existingCountSnap.data()?.count || 0) + 1;
+      const analysisKey = `${slugify(profile.childName)}-ieppdfana${String(analysisNumber).padStart(3, "0")}`;
       await db.collection("analyses").add({
         userId: user._id,
         profileId,
+        analysisNumber,
+        analysisKey,
         documentUrl,
         documentName,
         rawText: extractedText,
@@ -358,7 +395,7 @@ export default async function handler(req, res) {
         .where("profileId", "==", id)
         .orderBy("createdAt", "desc")
         .get();
-      const analyses = snap.docs.map(mapDoc).map(serialize);
+      const analyses = snap.docs.map(mapDoc).map(withParsedResult).map(serialize);
       return send(res, 200, analyses);
     }
 
@@ -380,7 +417,7 @@ export default async function handler(req, res) {
         .limit(1)
         .get();
       if (!cachedSnap.empty) {
-        const cached = mapDoc(cachedSnap.docs[0]);
+        const cached = withParsedResult(mapDoc(cachedSnap.docs[0]));
         return send(res, 200, serialize(cached.result));
       }
       const prompt = buildRightsPrompt({ profile });
@@ -406,7 +443,12 @@ export default async function handler(req, res) {
       if (!profileDoc.exists || profileDoc.data()?.userId !== user._id) return send(res, 404, { message: "Profile not found" });
       const profile = mapDoc(profileDoc);
       const analysis = analysisId ? await db.collection("analyses").doc(analysisId).get() : null;
-      const analysisResult = analysis && analysis.exists ? analysis.data()?.result : null;
+      if (analysisId) {
+        const analysisData = analysis && analysis.exists ? analysis.data() : null;
+        const invalidAnalysis = !analysisData || analysisData.userId !== user._id || analysisData.profileId !== profileId;
+        if (invalidAnalysis) return send(res, 404, { message: "Analysis not found for selected profile" });
+      }
+      const analysisResult = analysis && analysis.exists ? parsePossibleJson(analysis.data()?.result) : null;
       const cacheKey = crypto.createHash("sha256").update(`${profileId}-${analysisId || "none"}-${meetingType}`).digest("hex");
       const cachedSnap = await db.collection("meetingPreps")
         .where("userId", "==", user._id)
@@ -415,7 +457,7 @@ export default async function handler(req, res) {
         .limit(1)
         .get();
       if (!cachedSnap.empty) {
-        const cached = mapDoc(cachedSnap.docs[0]);
+        const cached = withParsedResult(mapDoc(cachedSnap.docs[0]));
         return send(res, 200, serialize(cached.result));
       }
       const prompt = buildMeetingPrompt({ profile, analysis: analysisResult, meetingType });
@@ -430,6 +472,52 @@ export default async function handler(req, res) {
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
       return send(res, 200, serialize(result));
+    }
+    if (resource === "meeting-prep" && id && req.method === "GET") {
+      try {
+        console.log("=== MEETING PREP GET REQUEST ===");
+        console.log("Profile ID:", id);
+        
+        const user = await requireAuth(req);
+        console.log("User authenticated:", user._id);
+        
+        const snap = await db.collection("meetingPreps")
+          .where("userId", "==", user._id)
+          .where("profileId", "==", id)
+          .orderBy("createdAt", "desc")
+          .get();
+        
+        console.log("Query completed, found:", snap.size, "documents");
+        
+        const docs = snap.docs.map(mapDoc);
+        console.log("After mapDoc:", docs.length, "documents");
+        
+        const parsed = docs.map(withParsedResult);
+        console.log("After withParsedResult:", parsed.length, "documents");
+        
+        const serialized = parsed.map(serialize);
+        console.log("After serialize:", serialized.length, "documents");
+        
+        console.log("=== MEETING PREP REQUEST SUCCESS ===");
+        return send(res, 200, serialized);
+      } catch (error) {
+        console.error("=== MEETING PREP REQUEST ERROR ===");
+        console.error("Error:", error);
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+        console.error("===================================");
+        return send(res, 500, { message: "Server error: " + error.message });
+      }
+    }
+    if (resource === "meeting-prep" && req.method === "DELETE" && id) {
+      const user = await requireAuth(req);
+      const docRef = db.collection("meetingPreps").doc(id);
+      const doc = await docRef.get();
+      if (!doc.exists || doc.data()?.userId !== user._id) {
+        return send(res, 404, { message: "Meeting prep not found" });
+      }
+      await docRef.delete();
+      return send(res, 200, { message: "Deleted" });
     }
 
     // Documents
@@ -446,7 +534,7 @@ export default async function handler(req, res) {
     if (resource === "documents" && req.method === "POST" && !id) {
       const user = await requireAuth(req);
       const { fields, files } = await parseMultipart(req);
-      const profileId = fields.profileId?.[0] || fields.profileId;
+      const profileId = fields.profileId?.[0] || fields["profileId "]?.[0] || fields.profileId || fields["profileId "];
       const type = fields.type?.[0] || fields.type;
       const name = fields.name?.[0] || fields.name;
       const date = fields.date?.[0] || fields.date;
@@ -587,7 +675,7 @@ export default async function handler(req, res) {
       const analysesSnap = await db.collection("analyses").orderBy("createdAt", "desc").limit(200).get();
       const results = [];
       for (const doc of analysesSnap.docs) {
-        const analysis = mapDoc(doc);
+        const analysis = withParsedResult(mapDoc(doc));
         const analysisUser = await db.collection("users").doc(analysis.userId).get();
         const profile = await db.collection("profiles").doc(analysis.profileId).get();
         results.push(serialize({

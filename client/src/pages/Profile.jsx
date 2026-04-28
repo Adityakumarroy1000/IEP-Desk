@@ -92,6 +92,7 @@ export default function Profile() {
 
   const startEdit = (profile) => {
     setEditingId(profile._id);
+    setMessage("");
     setForm({
       childName: profile.childName || "",
       dateOfBirth: profile.dateOfBirth ? profile.dateOfBirth.slice(0, 10) : "",
@@ -103,6 +104,12 @@ export default function Profile() {
       planType: profile.planType || "IEP",
       notes: profile.notes || ""
     });
+  };
+
+  const startCreateNew = () => {
+    setEditingId(null);
+    setMessage("");
+    setForm(initialForm);
   };
 
   return (
@@ -117,10 +124,13 @@ export default function Profile() {
             <div className="mt-2 text-xs text-gray-400">{FERPA_NOTICE}</div>
           </Card>
           <Card>
-            <h3 className="text-lg font-semibold text-gray-800">Existing Profiles</h3>
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-lg font-semibold text-gray-800">Existing Profiles</h3>
+              <Button variant="ghost" onClick={startCreateNew}>Add Another Child</Button>
+            </div>
             <div className="mt-4 grid gap-2 text-sm text-gray-600">
               {profiles?.length ? profiles.map((p) => (
-                <div key={p._id} className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
+                <div key={p._id} className={`flex items-center justify-between rounded-lg border px-3 py-2 ${editingId === p._id ? "border-primary/40 bg-primary-light/40" : "border-gray-200"}`}>
                   <div>
                     <div className="font-semibold text-gray-800">{p.childName}</div>
                     <div className="text-xs text-gray-500">{p.grade} - {p.state}</div>
@@ -134,7 +144,7 @@ export default function Profile() {
           </Card>
 
           <Card>
-            <h3 className="text-lg font-semibold text-gray-800">{editingId ? "Edit" : "Create"} Profile</h3>
+            <h3 className="text-lg font-semibold text-gray-800">{editingId ? "Edit Child Profile" : "Create Child Profile"}</h3>
             <form className="mt-4 grid gap-4" onSubmit={handleSubmit}>
               <Input label="Child Name" value={form.childName} onChange={(e) => handleChange("childName", e.target.value)} required />
               <Input label="Date of Birth" type="date" value={form.dateOfBirth} onChange={(e) => handleChange("dateOfBirth", e.target.value)} />
@@ -184,7 +194,12 @@ export default function Profile() {
                   {message}
                 </div>
               )}
-              <Button type="submit">Save Profile</Button>
+              <div className="flex items-center gap-3">
+                <Button type="submit">{editingId ? "Update Profile" : "Save Profile"}</Button>
+                {editingId ? (
+                  <Button type="button" variant="ghost" onClick={startCreateNew}>Cancel Edit</Button>
+                ) : null}
+              </div>
             </form>
           </Card>
         </div>

@@ -15,8 +15,9 @@ export async function generateMeetingPrep(req, res) {
   if (!profile) return res.status(404).json({ message: "Profile not found" });
 
   const analysis = analysisId
-    ? await Analysis.findOne({ _id: analysisId, userId: req.user._id })
+    ? await Analysis.findOne({ _id: analysisId, userId: req.user._id, profileId })
     : null;
+  if (analysisId && !analysis) return res.status(404).json({ message: "Analysis not found for selected profile" });
 
   const cacheKey = hash(`${profileId}-${analysisId || "none"}-${meetingType}`);
   const cached = await MeetingPrep.findOne({ userId: req.user._id, profileId, cacheKey });

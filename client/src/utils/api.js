@@ -1,31 +1,25 @@
-﻿const BASE_URL =
+const BASE_URL =
   import.meta.env.VITE_API_URL ||
-  (typeof window !== "undefined" ? window.location.origin : "http://localhost:5000");
+  "http://localhost:3000";
 
 async function request(method, url, data, token, config = {}) {
-  const headers = {
+  const defaultHeaders = {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {})
   };
 
   const options = {
     method: method.toUpperCase(),
-    headers,
     ...config
   };
+  options.headers = { ...defaultHeaders, ...(config.headers || {}) };
 
   if (data && !(data instanceof FormData)) {
     options.body = JSON.stringify(data);
   }
 
   if (data instanceof FormData) {
-    delete headers["Content-Type"];
     options.body = data;
-  }
-  if (config?.headers) {
-    options.headers = { ...options.headers, ...config.headers };
-  }
-  if (data instanceof FormData) {
     delete options.headers["Content-Type"];
   }
 

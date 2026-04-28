@@ -1,0 +1,145 @@
+[
+  {
+    "name": "Arabic Bridal",
+    "description": "A beautiful choice for brides who love minimal yet graceful henna. Arabic bridal designs feature flowing florals, leafy trails, and elegant spacing for a modern bridal look.",
+    "best_for": "Brides who prefer simple, classy, and elegant henna.",
+    "price_range": "Three Quarter Hands - 2,500/-, From Elbow - 3,000/-",
+    "options": [
+      "Three Quarter Hands - 2,500/-",
+      "From Elbow - 3,000/-"
+    ],
+    "images": [
+      "/assets/images/services/Arabic Bridal/a1b1c36e4754dd0289157f1f68733cf0.jpg",
+      "/assets/images/services/Arabic Bridal/be07c4560780957ac4853cff99b3b131.jpg"
+    ]
+  },
+  {
+    "name": "Gorgeous Bridal (Heavy Work)",
+    "description": "Dense floral and paisley patterns with filled areas for a rich bridal appearance. Balanced detailing keeps the hands beautifully full without extreme intricacy.",
+    "best_for": "Brides who want a fuller and more decorative bridal look.",
+    "price_range": "Three Quarter Hands - 3,000/-, From Elbow - 3,500/-, Upper Elbow - 5,000/-",
+    "options": [
+      "Three Quarter Hands - 3,000/-",
+      "From Elbow - 3,500/-",
+      "Upper Elbow - 5,000/-"
+    ],
+    "images": [
+      "/assets/images/services/Gorgeous Bridal (Heavy Work)/unnamed.jpg",
+      "/assets/images/services/Gorgeous Bridal (Heavy Work)/unnamed2.jpg"
+    ]
+  },
+  {
+    "name": "Royal Bridal (Intricate Work)",
+    "description": "Highly detailed line work with traditional bridal motifs. Taj Mahal patterns, peacocks, and heritage-inspired elements create a majestic bridal look.",
+    "best_for": "Brides who want rich, traditional, and highly detailed bridal henna.",
+    "price_range": "From Elbow - 4,000/-, Upper Elbow - 6,000/-",
+    "options": [
+      "From Elbow - 4,000/-",
+      "Upper Elbow - 6,000/-"
+    ],
+    "images": [
+      "/assets/images/services/Royal Bridal (Intricate Work)/unnamed.jpg"
+    ]
+  },
+  {
+    "name": "Signature Bridal (Premium Custom Design)",
+    "description": "Fully customized, highly intricate bridal designs crafted around the bride's personality and wedding theme. Features premium storytelling motifs and artistic detail.",
+    "best_for": "Brides who want exclusive, artistic, and premium bridal henna.",
+    "price_range": "From Elbow - 5,500/-, Upper Elbow - 7,000/-",
+    "options": [
+      "From Elbow - 5,500/-",
+      "Upper Elbow - 7,000/-"
+    ],
+    "highlights": [
+      "Elephant motifs",
+      "Peacock designs",
+      "Swan patterns",
+      "Royal floral structures",
+      "Elegant bridal storytelling patterns"
+    ],
+    "images": [
+      "/assets/images/services/Signature Bridal (Premium Custom Design)/unnamed.jpg"
+    ]
+  },
+  {
+    "name": "Arabic Non-Bridal",
+    "description": "Bold flowers, leafy patterns, and flowing trails with stylish spacing. Modern, graceful, and eye-catching without feeling heavy.",
+    "best_for": "Eid, engagement functions, dawats, and festive occasions.",
+    "price_range": "700 - 1,200/-",
+    "images": [
+      "/assets/images/services/Arabic Non-Bridal/2981575f54864b1cb163fb8578457cbe.jpg",
+      "/assets/images/services/Arabic Non-Bridal/774841ffe3b7487fa6779f1f799b7123.jpg",
+      "/assets/images/services/Arabic Non-Bridal/7ad9521744960af5a9564dfd0a47aba9.jpg",
+      "/assets/images/services/Arabic Non-Bridal/feee73af6796ed9317bdb777c0968099.jpg"
+    ]
+  },
+  {
+    "name": "Non-Bridal",
+    "description": "Perfect for festivals, weddings, parties, and everyday beauty. Light and delicate designs with floral motifs, finger detailing, and minimal Arabic trails.",
+    "best_for": "Everyday wear and small celebrations.",
+    "price_range": "300 - 600/-",
+    "highlights": [
+      "Small floral motifs",
+      "Finger detailing",
+      "Wrist patterns",
+      "Minimal Arabic trails"
+    ],
+    "images": [
+      "/assets/images/services/Non-Bridal/3962a349b3d7a81d9bbe8beda0fa3733.jpg",
+      "/assets/images/services/Non-Bridal/7f707959f5e62bb482e6c3f913686199.jpg",
+      "/assets/images/services/Non-Bridal/unnamed.png"
+    ]
+  },
+  {
+    "name": "Royal Non-Bridal Henna",
+    "description": "Luxurious detailed henna without choosing a bridal package. Intricate floral work and premium motifs for a rich finish.",
+    "best_for": "Engagement events, family weddings, and premium henna lovers.",
+    "price_range": "2,000 - 2,800/-",
+    "highlights": [
+      "Intricate floral work",
+      "Mandala patterns",
+      "Peacock motifs",
+      "Detailed wrist and finger coverage"
+    ],
+    "images": [
+      "/assets/images/services/Royal Non-Bridal Henna/126255e2b19cc13af6ee4bc703516923.jpg",
+      "/assets/images/services/Royal Non-Bridal Henna/eadf449432ef22b69b0dd6685144f45d.jpg",
+      "/assets/images/services/Royal Non-Bridal Henna/fe943725957b83eac1ccc507eb585346.jpg"
+    ]
+  },
+  {
+    "name": "Semi-Heavy Party Henna",
+    "description": "Balanced designs with moderate filling and elegant patterns for party-ready hands.",
+    "best_for": "Celebrations where you want a richer look without full bridal coverage.",
+    "price_range": "1,200 - 1,800/-",
+    "highlights": [
+      "Floral structures",
+      "Paisley elements",
+      "Decorative finger work",
+      "Wrist or half-hand coverage"
+    ],
+    "images": [
+      "/assets/images/services/Semi-Heavy Party Henna/1a31db55ab2d0da72ca4a679980e6408.jpg",
+      "/assets/images/services/Semi-Heavy Party Henna/54f0a9acf6dbcb9e34190220a8f8a830.jpg"
+    ]
+  },
+  {
+    "name": "Eid Special Henna",
+    "description": "Festive Arabic florals with decorative fingertips and stylish palm or backhand patterns.",
+    "best_for": "Eid celebrations and festive gatherings.",
+    "price_range": "500 - 1,200/-",
+    "highlights": [
+      "Beautiful Arabic florals",
+      "Decorative fingertips",
+      "Stylish palm or backhand patterns"
+    ],
+    "images": [
+      "/assets/images/services/Eid Special Henna/IMG-20251227-WA0016.jpg",
+      "/assets/images/services/Eid Special Henna/IMG-20251227-WA0018.jpg",
+      "/assets/images/services/Eid Special Henna/IMG-20251227-WA0029.jpg",
+      "/assets/images/services/Eid Special Henna/IMG-20260121-WA0011.jpg",
+      "/assets/images/services/Eid Special Henna/IMG-20260307-WA0015.jpg",
+      "/assets/images/services/Eid Special Henna/IMG-20260307-WA0017.jpg"
+    ]
+  }
+]

@@ -1,10 +1,9 @@
-﻿import User from "../models/User.js";
+import User from "../models/User.js";
 import { initFirebase, admin } from "../config/firebase.js";
-
-initFirebase();
 
 export async function authMiddleware(req, res, next) {
   try {
+    initFirebase();
     const authHeader = req.headers.authorization || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
     if (!token) return res.status(401).json({ message: "Missing auth token" });

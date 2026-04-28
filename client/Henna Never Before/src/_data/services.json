@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Bridal Henna Design",
+    "duration": "3-5 hours",
+    "price": "From $160",
+    "desc": "Full hands and feet with custom motifs, fine-line detailing, and photo-ready finish."
+  },
+  {
+    "name": "Event Artists On-Call",
+    "duration": "Per hour",
+    "price": "From $60/hr",
+    "desc": "Professional henna artists for weddings, parties, and brand activations."
+  },
+  {
+    "name": "Private Workshops",
+    "duration": "90 minutes",
+    "price": "From $45",
+    "desc": "Learn cone control, motif building, and stain care in a guided class."
+  },
+  {
+    "name": "Custom Scent & Blend",
+    "duration": "2-3 days",
+    "price": "From $80",
+    "desc": "Personalized blend for salons and studios with your preferred aroma profile."
+  }
+]

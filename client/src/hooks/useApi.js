@@ -1,4 +1,4 @@
-﻿import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useAuth } from "./useAuth.js";
 import { api } from "../utils/api.js";
 
@@ -13,10 +13,13 @@ export function useApi() {
     [getToken]
   );
 
-  return {
-    get: (url, config) => authedRequest("get", url, null, config),
-    post: (url, data, config) => authedRequest("post", url, data, config),
-    put: (url, data, config) => authedRequest("put", url, data, config),
-    del: (url, config) => authedRequest("delete", url, null, config)
-  };
+  return useMemo(
+    () => ({
+      get: (url, config) => authedRequest("get", url, null, config),
+      post: (url, data, config) => authedRequest("post", url, data, config),
+      put: (url, data, config) => authedRequest("put", url, data, config),
+      del: (url, config) => authedRequest("delete", url, null, config)
+    }),
+    [authedRequest]
+  );
 }

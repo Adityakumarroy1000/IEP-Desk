@@ -1,0 +1,170 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background: #4b4747;
+    padding-left: 7%;
+    padding-right: 7%;
+}
+header {
+    background: #4b4747;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    padding-top: 20px;
+}
+
+span{
+    color: #ff5733;
+}
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+nav ul li {
+    display: inline;
+    margin: 0 15px;
+}
+nav ul li a {
+    color: white;
+    text-decoration: none;
+}
+section {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    color: aliceblue;
+
+    height: 80%;
+}
+
+section h2{
+    font-size: 60px;
+    width: 75%;
+}
+
+section p {
+    font-size: 20px;
+    width: 65%;
+}
+section img{
+    width: 400px;
+}
+.menu{
+    padding-top: 5%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+}
+
+.menu-items{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item p{
+    padding-left: 15%;
+}
+.item {
+    margin: 20px;
+    justify-content: center;
+    align-items: center;
+    width: 25vw;
+}
+.item img {
+    width: 200px;
+    height: 200px;
+    border-radius: 10px;
+}
+button {
+    background: #ff5733;
+    color:white ;
+    border: none;
+    padding: 10px 20px;
+    margin-right: 10px;
+    cursor: pointer;
+    border-radius: 25px;
+}
+.b2{
+    color: black;
+    background: white;
+}
+footer {
+    background: #333;
+    color: white;
+    padding: 20px;
+}
+
+.menu-items{
+    display: flex;
+}
+
+.about{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+    width: 80vw;
+    height: 70vh;
+    padding-bottom: 50vh;
+}
+
+.about img{
+    padding-top: 15%;
+}
+
+.about h3{
+    font-size: 45px;
+    text-align: right;
+}
+
+.main{
+    display: flex;
+}
+ .main .right{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: right;
+    height: 70%;
+ }
+
+ .about p{
+    text-align: left;
+ }
+
+ .contact{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+
+ }
+
+ form{
+    display: flexbox;
+    width: 40%;
+    margin-top: -20%;
+ }
+
+ .name{
+    height: 5%;
+    width: 45%;
+    margin: 2.2%;
+ }
+
+ .sub{
+    width: 95%;
+    height: 5%;
+ }
+
+ textarea{
+    width: 95%;
+    height: 15%;
+    margin: 2.2%;
+ }

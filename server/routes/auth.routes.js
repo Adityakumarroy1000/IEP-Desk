@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import { admin, initFirebase } from "../config/firebase.js";
 import User from "../models/User.js";
 import { getOrCreateMe, uploadAvatar, deleteAccount } from "../controllers/auth.controller.js";
@@ -6,10 +6,10 @@ import { authMiddleware } from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/upload.middleware.js";
 
 const router = express.Router();
-initFirebase();
 
 async function firebaseTokenMiddleware(req, res, next) {
   try {
+    initFirebase();
     const authHeader = req.headers.authorization || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
     if (!token) return res.status(401).json({ message: "Missing auth token" });

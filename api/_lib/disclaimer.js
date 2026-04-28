@@ -1,0 +1,1 @@
+export const LEGAL_DISCLAIMER = "This analysis is for informational and educational purposes only. It does not constitute legal advice and does not create an attorney-client relationship. Always verify information against your original IEP document. For complex legal disputes, consult a qualified special education attorney or advocate.";

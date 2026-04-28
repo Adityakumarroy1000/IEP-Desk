@@ -7,6 +7,14 @@ import { buildAnalyzeIEPPrompt } from "../prompts/analyzeIEP.js";
 
 const hashText = (text) => crypto.createHash("sha256").update(text).digest("hex");
 
+function slugify(value) {
+  return String(value || "child")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    || "child";
+}
+
 export async function analyzeIEP(req, res) {
   const { profileId, extractedText } = req.body;
   if (!profileId || !extractedText) return res.status(400).json({ message: "Missing profileId or extractedText" });
@@ -33,10 +41,14 @@ export async function analyzeIEP(req, res) {
 
   const prompt = buildAnalyzeIEPPrompt({ profile, extractedText });
   const result = await runOpenRouter(prompt);
+  const analysisNumber = (await Analysis.countDocuments({ userId: req.user._id, profileId })) + 1;
+  const analysisKey = `${slugify(profile.childName)}-ieppdfana${String(analysisNumber).padStart(3, "0")}`;
 
   const analysis = await Analysis.create({
     userId: req.user._id,
     profileId,
+    analysisNumber,
+    analysisKey,
     documentUrl,
     documentName,
     rawText: extractedText,
@@ -50,4 +62,11 @@ export async function analyzeIEP(req, res) {
 export async function listAnalyses(req, res) {
   const analyses = await Analysis.find({ userId: req.user._id, profileId: req.params.profileId }).sort({ createdAt: -1 });
   res.json(analyses);
+}
+
+export async function deleteAnalysis(req, res) {
+  const analysis = await Analysis.findOne({ _id: req.params.id, userId: req.user._id });
+  if (!analysis) return res.status(404).json({ message: "Analysis not found" });
+  await analysis.deleteOne();
+  res.json({ message: "Deleted" });
 }

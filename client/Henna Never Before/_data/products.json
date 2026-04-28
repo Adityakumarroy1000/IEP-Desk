@@ -1,0 +1,38 @@
+﻿[
+  {
+    "name": "Special Regular Cone",
+    "price": "120 BDT",
+    "badge": "Signature",
+    "size": "25 gm",
+    "ship": "Deep-freeze required",
+    "desc": "Made with BAQ luxury henna powder and eucalyptus oil. Gives a red-to-brown stain; keep on skin for 4 hours for best results.",
+    "image": "/assets/images/products/Henna never before special regular cone.jpg"
+  },
+  {
+    "name": "Premium Cone",
+    "price": "160 BDT",
+    "badge": "Premium",
+    "size": "25 gm",
+    "ship": "Deep-freeze required",
+    "desc": "Made with lavender oil and luxury BAQ henna powder. Gives a maroon-dark color; lavender aroma is soothing and the paste is smooth.",
+    "image": "/assets/images/products/Premium cone.jpg"
+  },
+  {
+    "name": "Premium Nail Tint",
+    "price": "120 BDT",
+    "badge": "Premium",
+    "size": "15 gm",
+    "ship": "Deep-freeze required",
+    "desc": "Made with tea extract and wheat flour. Apply for 6 hours for a deep maroon stain. For beautiful henna-stained nails.",
+    "image": "/assets/images/products/Premium Nail Tint.jpg"
+  },
+  {
+    "name": "Herbal Hair Pack",
+    "price": "130 BDT",
+    "badge": "Herbal Care",
+    "size": "100 gm",
+    "ship": "Freshly blended",
+    "desc": "Natural herb blend for strong, healthy hair. Supports thicker, shinier hair and a healthy scalp.",
+    "image": "/assets/images/products/Henna never before herbal henna pack.jpg"
+  }
+]
