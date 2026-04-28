@@ -12,6 +12,7 @@
       "use": "@vercel/node"
     }
   ],
+  "installCommand": "rm -rf node_modules package-lock.json && npm install",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/server.js" },
     { "source": "/((?!api/).*)", "destination": "/client/index.html" }
