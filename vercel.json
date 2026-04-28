@@ -3,7 +3,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": "client/dist",
   "installCommand": "npm install",
-  "nodeVersion": "18.x",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/server.js" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
