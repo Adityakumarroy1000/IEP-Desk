@@ -16,7 +16,7 @@ export default function Dashboard() {
   const { profiles, setProfiles, activeProfileId, setActiveProfileId } = useProfile();
   const [analyses, setAnalyses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [recentMeetingPreps, setRecentMeetingPreps] = useState([]);
+  const [meetingPreps, setMeetingPreps] = useState([]);
 
   useEffect(() => {
     const load = async () => {
@@ -30,14 +30,9 @@ export default function Dashboard() {
           const list = await api.get(`/analyze/${profileData[0]._id}`);
           setAnalyses(list || []);
           
-          // Load recent meeting preps
-          try {
-            const meetingPrepList = await api.get(`/meeting-prep/${profileData[0]._id}`);
-            setRecentMeetingPreps(meetingPrepList || []);
-          } catch (err) {
-            console.error("Failed to load meeting preps:", err);
-            setRecentMeetingPreps([]);
-          }
+          // Load meeting preps for dashboard
+          const meetingPrepsList = await api.get(`/meeting-prep/${profileData[0]._id}`);
+          setMeetingPreps(meetingPrepsList || []);
         }
       } catch (err) {
         console.error(err);
@@ -144,14 +139,14 @@ export default function Dashboard() {
                 <h3 className="text-lg font-semibold text-gray-800">Recent Meeting Preps</h3>
               </div>
               <div className="mt-4 space-y-2 text-sm text-gray-600">
-                {recentMeetingPreps.length ? recentMeetingPreps.map((prep) => (
+                {meetingPreps.length ? meetingPreps.map((prep) => (
                   <div key={prep._id} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white/70 px-3 py-2">
                     <div>
                       <div className="font-semibold text-gray-800">{prep.meetingType || "Meeting Prep"}</div>
                       <div className="text-xs text-gray-500">{new Date(prep.createdAt).toLocaleDateString()}</div>
                     </div>
-                    <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">
-                      {prep.profileName}
+                    <span className="rounded-full bg-primary-light px-2 py-1 text-xs font-semibold text-primary">
+                      {prep.meetingType || "Meeting Prep"}
                     </span>
                   </div>
                 )) : (

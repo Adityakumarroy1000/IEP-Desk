@@ -7,15 +7,6 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
-    build: {
-      rollupOptions: {
-        target: 'node18',
-        external: [],
-      },
-      target: 'esnext',
-      minify: 'esbuild',
-      sourcemap: false,
-    },
     server: {
       port: 5173,
       proxy: {
