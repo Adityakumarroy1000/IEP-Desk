@@ -1,6 +1,14 @@
+const DEFAULT_DEV_API = "http://localhost:3000";
+
 const BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:3000";
+  import.meta.env.VITE_API_URL ??
+  (import.meta.env.DEV ? DEFAULT_DEV_API : "");
+
+function joinUrl(base, path) {
+  const basePart = String(base || "").replace(/\/+$/, "");
+  const pathPart = String(path || "").replace(/^\/+/, "");
+  return basePart ? `${basePart}/${pathPart}` : `/${pathPart}`;
+}
 
 async function request(method, url, data, token, config = {}) {
   const defaultHeaders = {
@@ -23,7 +31,7 @@ async function request(method, url, data, token, config = {}) {
     delete options.headers["Content-Type"];
   }
 
-  const res = await fetch(`${BASE_URL}/api${url}`, options);
+  const res = await fetch(joinUrl(BASE_URL, `api${url}`), options);
   const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
     const message = payload?.message || "Request failed";

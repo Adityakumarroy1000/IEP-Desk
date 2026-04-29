@@ -18,6 +18,7 @@ Serverless app to help families understand IEPs with AI analysis, rights breakdo
    - `OPENROUTER_API_KEY`
    - `CLIENT_URL=http://localhost:5173`
 2. Configure `client/.env` with Firebase client keys.
+   - Optional: `VITE_API_URL` (only needed if your API is on a different origin in dev; in production on Vercel, leave unset so the client uses same-origin `/api`)
 3. Install dependencies:
    - `npm.cmd install`
    - `npm.cmd --prefix client install`
