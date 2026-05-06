@@ -220,7 +220,7 @@ export default function Settings() {
             <div className="mt-4 grid gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
               <div className="font-semibold">What will be erased:</div>
               <div>• Your profile (name, email, avatar)</div>
-              <div>• All uploaded documents and files</div>
+              <div>• All uploaded files</div>
               <div>• All analyses, meeting prep data, and notes</div>
               <div>• All account settings and preferences</div>
             </div>

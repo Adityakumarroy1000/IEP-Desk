@@ -49,7 +49,6 @@ export default function Navbar() {
           {user ? (
             <>
               <Link to="/dashboard" className="text-gray-700 hover:text-primary">Dashboard</Link>
-              <Link to="/documents" className="text-gray-700 hover:text-primary">Documents</Link>
               <div className="relative" ref={menuRef}>
                 <button
                   type="button"

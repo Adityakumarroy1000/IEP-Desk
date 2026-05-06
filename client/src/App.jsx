@@ -7,7 +7,6 @@ import Profile from "./pages/Profile.jsx";
 import Analyzer from "./pages/Analyzer.jsx";
 import Rights from "./pages/Rights.jsx";
 import MeetingPrep from "./pages/MeetingPrep.jsx";
-import Documents from "./pages/Documents.jsx";
 import Settings from "./pages/Settings.jsx";
 import AdminDashboard from "./admin/AdminDashboard.jsx";
 import AdminUsers from "./admin/AdminUsers.jsx";
@@ -47,7 +46,6 @@ export default function App() {
       <Route path="/rights" element={<RequireAuth><Rights /></RequireAuth>} />
       <Route path="/meeting-prep" element={<RequireAuth><MeetingPrep /></RequireAuth>} />
       <Route path="/meeting-preps" element={<RequireAuth><MeetingPrep /></RequireAuth>} />
-      <Route path="/documents" element={<RequireAuth><Documents /></RequireAuth>} />
       <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
 
       <Route path="/admin" element={<RequireAuth><RequireAdmin><AdminDashboard /></RequireAdmin></RequireAuth>} />
