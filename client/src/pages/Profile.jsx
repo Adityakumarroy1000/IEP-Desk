@@ -22,6 +22,8 @@ const initialForm = {
 
 const FERPA_NOTICE = "FERPA notice: This page contains student educational records. Only share information you have permission to use.";
 
+const asArray = (value) => (Array.isArray(value) ? value : []);
+
 export default function Profile() {
   const api = useApi();
   const { profiles, setProfiles, setActiveProfileId } = useProfile();
@@ -34,7 +36,7 @@ export default function Profile() {
     const load = async () => {
       try {
         const data = await api.get("/profile");
-        setProfiles(data || []);
+        setProfiles(asArray(data?.profiles ?? data));
       } catch (err) {
         setMessageType("error");
         setMessage(err?.message || "Failed to load profiles.");
@@ -80,7 +82,7 @@ export default function Profile() {
       setMessageType("success");
       setMessage("Profile saved successfully.");
       const data = await api.get("/profile");
-      setProfiles(data || []);
+      setProfiles(asArray(data?.profiles ?? data));
       setActiveProfileId(result?._id || editingId);
       setForm(initialForm);
       setEditingId(null);
@@ -129,7 +131,7 @@ export default function Profile() {
               <Button variant="ghost" onClick={startCreateNew}>Add Another Child</Button>
             </div>
             <div className="mt-4 grid gap-2 text-sm text-gray-600">
-              {profiles?.length ? profiles.map((p) => (
+              {asArray(profiles).length ? asArray(profiles).map((p) => (
                 <div key={p._id} className={`flex items-center justify-between rounded-lg border px-3 py-2 ${editingId === p._id ? "border-primary/40 bg-primary-light/40" : "border-gray-200"}`}>
                   <div>
                     <div className="font-semibold text-gray-800">{p.childName}</div>

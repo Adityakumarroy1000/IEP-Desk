@@ -11,6 +11,7 @@ import { auth, googleProvider } from "../firebase.js";
 import { api } from "../utils/api.js";
 
 export const AuthContext = createContext(null);
+const PROFILE_CACHE_KEY = "iep_auth_profile_cache_v1";
 
 function normalizeEmail(email) {
   return email.trim();
@@ -43,12 +44,34 @@ export function AuthProvider({ children }) {
   const [profileLoading, setProfileLoading] = useState(false);
 
   useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PROFILE_CACHE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        setProfile(parsed);
+      }
+    } catch {
+      localStorage.removeItem(PROFILE_CACHE_KEY);
+    }
+  }, []);
+
+  const persistProfile = (nextProfile) => {
+    if (!nextProfile || typeof nextProfile !== "object") {
+      localStorage.removeItem(PROFILE_CACHE_KEY);
+      return;
+    }
+    localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(nextProfile));
+  };
+
+  useEffect(() => {
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser || null);
 
       if (!firebaseUser) {
         setToken(null);
         setProfile(null);
+        localStorage.removeItem(PROFILE_CACHE_KEY);
         setProfileLoading(false);
         setLoading(false);
         return;
@@ -62,10 +85,11 @@ export function AuthProvider({ children }) {
           setToken(freshToken);
           const me = await api.post("/auth/me", {}, freshToken).catch(() => null);
           setProfile(me);
+          persistProfile(me);
         })
         .catch(() => {
           setToken(null);
-          setProfile(null);
+          // Keep cached lightweight profile on transient network failures.
         })
         .finally(() => {
           setProfileLoading(false);
@@ -73,6 +97,13 @@ export function AuthProvider({ children }) {
     });
     return () => unsub();
   }, []);
+
+  const handleLogout = async () => {
+    localStorage.removeItem(PROFILE_CACHE_KEY);
+    setToken(null);
+    setProfile(null);
+    await signOut(auth);
+  };
 
   const value = useMemo(
     () => ({
@@ -110,7 +141,7 @@ export function AuthProvider({ children }) {
           throw formatAuthError(error);
         }
       },
-      logout: () => signOut(auth),
+      logout: handleLogout,
       getToken: async () => {
         const current = auth.currentUser;
         if (!current) return null;
@@ -118,7 +149,10 @@ export function AuthProvider({ children }) {
         setToken(freshToken);
         return freshToken;
       },
-      setProfile
+      setProfile: (nextProfile) => {
+        setProfile(nextProfile);
+        persistProfile(nextProfile);
+      }
     }),
     [user, token, profile, loading, profileLoading]
   );

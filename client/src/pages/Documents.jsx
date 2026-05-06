@@ -19,6 +19,8 @@ const formatBytes = (bytes) => {
   return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
 };
 
+const asArray = (value) => (Array.isArray(value) ? value : []);
+
 export default function Documents() {
   const api = useApi();
   const { profiles, setProfiles, activeProfileId, setActiveProfileId } = useProfile();
@@ -28,15 +30,21 @@ export default function Documents() {
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
 
   useEffect(() => {
     const loadProfiles = async () => {
-      if (!profiles.length) {
-        const data = await api.get("/profile");
-        setProfiles(data || []);
-        if (data?.length) setActiveProfileId(data[0]._id);
+      try {
+        if (!profiles.length) {
+          const data = await api.get("/profile");
+          const normalizedProfiles = asArray(data?.profiles ?? data);
+          setProfiles(normalizedProfiles);
+          if (normalizedProfiles.length) setActiveProfileId(normalizedProfiles[0]._id);
+        }
+      } catch (err) {
+        setError(err?.message || "Failed to load profiles.");
       }
     };
     loadProfiles();
@@ -44,9 +52,13 @@ export default function Documents() {
 
   useEffect(() => {
     const loadDocs = async () => {
-      if (activeProfileId) {
-        const data = await api.get(`/documents/${activeProfileId}`);
-        setDocs(data || []);
+      try {
+        if (activeProfileId) {
+          const data = await api.get(`/documents/${activeProfileId}`);
+          setDocs(asArray(data?.documents ?? data));
+        }
+      } catch (err) {
+        setError(err?.message || "Failed to load documents.");
       }
     };
     loadDocs();
@@ -55,6 +67,7 @@ export default function Documents() {
   const handleUpload = async () => {
     if (!file || !activeProfileId) return;
     setLoading(true);
+    setError("");
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -73,8 +86,12 @@ export default function Documents() {
   };
 
   const deleteDoc = async (id) => {
-    await api.del(`/documents/${id}`);
-    setDocs((prev) => prev.filter((d) => d._id !== id));
+    try {
+      await api.del(`/documents/${id}`);
+      setDocs((prev) => prev.filter((d) => d._id !== id));
+    } catch (err) {
+      setError(err?.message || "Failed to delete document.");
+    }
   };
 
   const filtered = useMemo(() => {
@@ -96,7 +113,7 @@ export default function Documents() {
                 <span className="mb-2 block text-sm text-gray-600">Select Profile</span>
                 <select className="w-full rounded-lg border border-gray-300 px-4 py-3" value={activeProfileId || ""} onChange={(e) => setActiveProfileId(e.target.value)}>
                   <option value="">Select child profile</option>
-                  {profiles.map((p) => (
+                  {asArray(profiles).map((p) => (
                     <option key={p._id} value={p._id}>{p.childName}</option>
                   ))}
                 </select>
@@ -120,6 +137,7 @@ export default function Documents() {
                 {loading ? <Spinner label="Uploading" /> : "Upload Document"}
               </Button>
               <p className="text-xs text-gray-400">Supported types: PDF, PNG, JPG. Max size 10MB.</p>
+              {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-600">{error}</div>}
               <p className="text-xs text-gray-400">{FERPA_NOTICE}</p>
             </div>
           </Card>

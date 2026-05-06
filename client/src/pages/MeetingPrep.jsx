@@ -30,6 +30,7 @@ export default function MeetingPrep() {
   const [analysesError, setAnalysesError] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingSaved, setLoadingSaved] = useState(false);
+  const [error, setError] = useState("");
   const [result, setResult] = useState(null);
   const [activeTemplate, setActiveTemplate] = useState("beforeMeeting");
   const [checked, setChecked] = useState({});
@@ -43,15 +44,20 @@ export default function MeetingPrep() {
 
   useEffect(() => {
     const load = async () => {
-      if (!profiles.length && !authLoading && user) {
-        const data = await api.get("/profile");
-        setProfiles(data || []);
-        if (data?.length) {
-          const preferredProfileId = queryProfileId && data.some((item) => item._id === queryProfileId)
-            ? queryProfileId
-            : data[0]._id;
-          setActiveProfileId(preferredProfileId);
+      try {
+        if (!profiles.length && !authLoading && user) {
+          const data = await api.get("/profile");
+          const normalizedProfiles = asArray(data?.profiles ?? data);
+          setProfiles(normalizedProfiles);
+          if (normalizedProfiles.length) {
+            const preferredProfileId = queryProfileId && normalizedProfiles.some((item) => item._id === queryProfileId)
+              ? queryProfileId
+              : normalizedProfiles[0]._id;
+            setActiveProfileId(preferredProfileId);
+          }
         }
+      } catch (err) {
+        setError(err?.message || "Failed to load profiles.");
       }
     };
     load();
@@ -73,7 +79,11 @@ export default function MeetingPrep() {
         setAnalysesLoading(true);
         try {
           const data = await api.get(`/analyze/${activeProfileId}`);
-          setAnalyses(data || []);
+          const normalized = asArray(data?.analyses ?? data);
+          setAnalyses(normalized);
+          if (!normalized.length && data && !Array.isArray(data) && !Array.isArray(data?.analyses)) {
+            console.warn("Unexpected analyses payload shape:", data);
+          }
         } catch (err) {
           setAnalyses([]);
           setAnalysesError(err.message || "Failed to load analyses");
@@ -104,7 +114,8 @@ export default function MeetingPrep() {
     if (exists) setAnalysisId(queryAnalysisId);
   }, [searchParams, analyses]);
 
-  const loadSavedMeetingPreps = useCallback(async (profileId) => {
+  const loadSavedMeetingPreps = useCallback(async (profileId, options = {}) => {
+    const forceSelectLatest = Boolean(options.forceSelectLatest);
     if (!profileId || !user || authLoading) {
       setSavedMeetingPreps([]);
       setSelectedMeetingPrepId("");
@@ -122,6 +133,10 @@ export default function MeetingPrep() {
       }));
       setSavedMeetingPreps(normalized);
       if (normalized.length) {
+        if (forceSelectLatest) {
+          setSelectedMeetingPrepId(normalized[0]._id);
+          return;
+        }
         setSelectedMeetingPrepId((current) => (
           queryMeetingPrepId && normalized.some((item) => item._id === queryMeetingPrepId)
             ? queryMeetingPrepId
@@ -134,7 +149,8 @@ export default function MeetingPrep() {
       } else {
         setSelectedMeetingPrepId("");
       }
-    } catch {
+    } catch (err) {
+      setError(err?.message || "Failed to load meeting preps.");
       setSavedMeetingPreps([]);
       setSelectedMeetingPrepId("");
     } finally {
@@ -142,7 +158,8 @@ export default function MeetingPrep() {
     }
   }, [api, isViewAllMode, profiles, queryMeetingPrepId, user, authLoading]);
 
-  const loadAllMeetingPreps = useCallback(async (profileList) => {
+  const loadAllMeetingPreps = useCallback(async (profileList, options = {}) => {
+    const forceSelectLatest = Boolean(options.forceSelectLatest);
     if (!profileList.length || !user || authLoading) {
       setSavedMeetingPreps([]);
       setSelectedMeetingPrepId("");
@@ -171,6 +188,10 @@ export default function MeetingPrep() {
 
       setSavedMeetingPreps(merged);
       if (merged.length) {
+        if (forceSelectLatest) {
+          setSelectedMeetingPrepId(merged[0]._id);
+          return;
+        }
         setSelectedMeetingPrepId((current) => (
           queryMeetingPrepId && merged.some((item) => item._id === queryMeetingPrepId)
             ? queryMeetingPrepId
@@ -179,7 +200,8 @@ export default function MeetingPrep() {
       } else {
         setSelectedMeetingPrepId("");
       }
-    } catch {
+    } catch (err) {
+      setError(err?.message || "Failed to load meeting preps.");
       setSavedMeetingPreps([]);
       setSelectedMeetingPrepId("");
     } finally {
@@ -242,14 +264,17 @@ export default function MeetingPrep() {
 
   const handleGenerate = async () => {
     setLoading(true);
+    setError("");
     try {
       const payload = await api.post("/meeting-prep", { profileId: activeProfileId, analysisId, meetingType });
       setResult(payload);
       if (!isViewAllMode) {
-        await loadSavedMeetingPreps(activeProfileId);
+        await loadSavedMeetingPreps(activeProfileId, { forceSelectLatest: true });
       } else {
-        await loadAllMeetingPreps(profiles);
+        await loadAllMeetingPreps(profiles, { forceSelectLatest: true });
       }
+    } catch (err) {
+      setError(err?.message || "Failed to generate meeting prep.");
     } finally {
       setLoading(false);
     }
@@ -331,9 +356,9 @@ export default function MeetingPrep() {
             {!isViewAllMode && (
               <label className="block text-sm text-gray-700">
                 <span className="mb-2 block text-sm text-gray-600">Select Profile</span>
-                <select className="w-full rounded-lg border border-gray-300 px-4 py-3" value={activeProfileId || ""} onChange={(e) => setActiveProfileId(e.target.value)}>
+                  <select className="w-full rounded-lg border border-gray-300 px-4 py-3" value={activeProfileId || ""} onChange={(e) => setActiveProfileId(e.target.value)}>
                   <option value="">Select child profile</option>
-                  {profiles.map((p) => (
+                  {asArray(profiles).map((p) => (
                     <option key={p._id} value={p._id}>{p.childName}</option>
                   ))}
                 </select>
@@ -345,7 +370,7 @@ export default function MeetingPrep() {
                   <span className="mb-2 block text-sm text-gray-600">Select Analysis</span>
                   <select className="w-full rounded-lg border border-gray-300 px-4 py-3" value={analysisId} onChange={(e) => setAnalysisId(e.target.value)}>
                     <option value="">Select analysis</option>
-                    {analyses.map((a) => (
+                    {asArray(analyses).map((a) => (
                       <option key={a._id} value={a._id}>{a.analysisKey || a.documentName || "Analysis"} - {new Date(a.createdAt).toLocaleDateString()}</option>
                     ))}
                   </select>
@@ -398,7 +423,7 @@ export default function MeetingPrep() {
                     onChange={(e) => setMeetingPrepFilterProfileId(e.target.value)}
                   >
                     <option value="all">All Meeting Preps</option>
-                    {profiles.map((profileItem) => (
+                    {asArray(profiles).map((profileItem) => (
                       <option key={profileItem._id} value={profileItem._id}>
                         {profileItem.childName}
                       </option>
@@ -446,6 +471,7 @@ export default function MeetingPrep() {
                 )}
               </div>
             )}
+            {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-600">{error}</div>}
             <p className="text-xs text-gray-400">{FERPA_NOTICE}</p>
           </div>
         </Card>

@@ -24,8 +24,9 @@ function RequireAuth({ children }) {
 }
 
 function RequireAdmin({ children }) {
-  const { user, profile, profileLoading } = useAuth();
+  const { user, profile, loading, profileLoading } = useAuth();
 
+  if (loading) return <div className="p-6"><Spinner label="Checking auth" /></div>;
   if (!user) return <Navigate to="/login" replace />;
   if (profileLoading) return <div className="p-6"><Spinner label="Checking admin" /></div>;
   if (profile?.role !== "admin") return <Navigate to="/dashboard" replace />;

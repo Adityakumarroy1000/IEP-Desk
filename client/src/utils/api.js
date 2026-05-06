@@ -1,8 +1,6 @@
-const DEFAULT_DEV_API = "http://localhost:3000";
-
-const BASE_URL =
-  import.meta.env.VITE_API_URL ??
-  (import.meta.env.DEV ? DEFAULT_DEV_API : "");
+const rawApiBase = import.meta.env.VITE_API_URL;
+const BASE_URL = typeof rawApiBase === "string" ? rawApiBase.trim() : "";
+const inflightGetRequests = new Map();
 
 function joinUrl(base, path) {
   const basePart = String(base || "").replace(/\/+$/, "");
@@ -31,13 +29,43 @@ async function request(method, url, data, token, config = {}) {
     delete options.headers["Content-Type"];
   }
 
-  const res = await fetch(joinUrl(BASE_URL, `api${url}`), options);
+  const requestUrl = joinUrl(BASE_URL, `api${url}`);
+  const methodName = method.toUpperCase();
+  const canDedupeGet = methodName === "GET" && !data;
+  const requestKey = canDedupeGet ? `${requestUrl}|${token || ""}` : null;
+
+  if (requestKey && inflightGetRequests.has(requestKey)) {
+    return inflightGetRequests.get(requestKey);
+  }
+
+  const execute = async () => {
+  let res;
+  try {
+    res = await fetch(requestUrl, options);
+  } catch (error) {
+    const isLocalApi = requestUrl.includes("localhost:3000");
+    const message = isLocalApi
+      ? "Cannot reach local API server at http://localhost:3000. Start it with `npm run dev:api`."
+      : "Cannot reach the API right now. Please check your network or server status and try again.";
+    throw new Error(message);
+  }
   const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
     const message = payload?.message || "Request failed";
     throw new Error(message);
   }
   return payload;
+  };
+
+  if (requestKey) {
+    const promise = execute().finally(() => {
+      inflightGetRequests.delete(requestKey);
+    });
+    inflightGetRequests.set(requestKey, promise);
+    return promise;
+  }
+
+  return execute();
 }
 
 export const api = {

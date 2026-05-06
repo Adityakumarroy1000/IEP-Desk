@@ -1,11 +1,16 @@
-﻿import * as pdfjsLib from "pdfjs-dist";
+import * as pdfjsLib from "pdfjs-dist";
 import workerSrc from "pdfjs-dist/build/pdf.worker.mjs?url";
+import foxitSerifFontUrl from "pdfjs-dist/standard_fonts/FoxitSerif.pfb?url";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+const standardFontDataUrl = foxitSerifFontUrl.replace(/[^/]+$/, "");
 
 export async function extractPdfText(file) {
   const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const pdf = await pdfjsLib.getDocument({
+    data: arrayBuffer,
+    standardFontDataUrl
+  }).promise;
   const pages = [];
   for (let i = 1; i <= pdf.numPages; i += 1) {
     const page = await pdf.getPage(i);

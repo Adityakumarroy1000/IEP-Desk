@@ -6,14 +6,23 @@ import Button from "../components/ui/Button.jsx";
 import Input from "../components/ui/Input.jsx";
 import { useApi } from "../hooks/useApi.js";
 
+const asArray = (value) => (Array.isArray(value) ? value : []);
+
 export default function AdminUsers() {
   const api = useApi();
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
+  const [error, setError] = useState("");
 
   const load = async () => {
-    const data = await api.get(`/admin/users?search=${encodeURIComponent(query)}`);
-    setUsers(data || []);
+    try {
+      setError("");
+      const data = await api.get(`/admin/users?search=${encodeURIComponent(query)}`);
+      setUsers(asArray(data?.users ?? data));
+    } catch (err) {
+      setError(err?.message || "Failed to load users.");
+      setUsers([]);
+    }
   };
 
   useEffect(() => { load(); }, []);
@@ -38,7 +47,8 @@ export default function AdminUsers() {
             <Button variant="ghost" onClick={load}>Search</Button>
           </div>
           <div className="mt-4 space-y-2 text-sm text-gray-600">
-            {users.map((u) => (
+            {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-600">{error}</div>}
+            {asArray(users).map((u) => (
               <div key={u._id} className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
                 <div>
                   <div className="font-semibold text-gray-800">{u.name}</div>

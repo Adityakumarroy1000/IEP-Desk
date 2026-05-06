@@ -9,18 +9,26 @@ import { useProfile } from "../hooks/useProfile.js";
 
 const FERPA_NOTICE = "FERPA notice: This page contains student educational records. Only share information you have permission to use.";
 
+const asArray = (value) => (Array.isArray(value) ? value : []);
+
 export default function Rights() {
   const api = useApi();
   const { profiles, setProfiles, activeProfileId, setActiveProfileId } = useProfile();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const load = async () => {
-      if (!profiles.length) {
-        const data = await api.get("/profile");
-        setProfiles(data || []);
-        if (data?.length) setActiveProfileId(data[0]._id);
+      try {
+        if (!profiles.length) {
+          const data = await api.get("/profile");
+          const normalizedProfiles = asArray(data?.profiles ?? data);
+          setProfiles(normalizedProfiles);
+          if (normalizedProfiles.length) setActiveProfileId(normalizedProfiles[0]._id);
+        }
+      } catch (err) {
+        setError(err?.message || "Failed to load profiles.");
       }
     };
     load();
@@ -28,9 +36,12 @@ export default function Rights() {
 
   const handleGenerate = async () => {
     setLoading(true);
+    setError("");
     try {
       const payload = await api.post("/rights", { profileId: activeProfileId });
       setResult(payload);
+    } catch (err) {
+      setError(err?.message || "Failed to load rights.");
     } finally {
       setLoading(false);
     }
@@ -46,7 +57,7 @@ export default function Rights() {
               <span className="mb-2 block text-sm text-gray-600">Select Profile</span>
               <select className="w-full rounded-lg border border-gray-300 px-4 py-3" value={activeProfileId || ""} onChange={(e) => setActiveProfileId(e.target.value)}>
                 <option value="">Select child profile</option>
-                {profiles.map((p) => (
+                {asArray(profiles).map((p) => (
                   <option key={p._id} value={p._id}>{p.childName} - {p.state}</option>
                 ))}
               </select>
@@ -54,6 +65,7 @@ export default function Rights() {
             <Button onClick={handleGenerate} disabled={!activeProfileId || loading}>
               {loading ? <Spinner label="Generating rights" /> : "Show My Rights"}
             </Button>
+            {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-600">{error}</div>}
             <p className="text-xs text-gray-400">{FERPA_NOTICE}</p>
           </div>
         </Card>

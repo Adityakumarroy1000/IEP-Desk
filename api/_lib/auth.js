@@ -21,7 +21,14 @@ export async function requireAuth(req) {
     error.statusCode = 401;
     throw error;
   }
-  const decoded = await admin.auth().verifyIdToken(token);
+  let decoded;
+  try {
+    decoded = await admin.auth().verifyIdToken(token);
+  } catch {
+    const error = new Error("Invalid or expired auth token");
+    error.statusCode = 401;
+    throw error;
+  }
   const docRef = db.collection("users").doc(decoded.uid);
   const snap = await docRef.get();
   if (!snap.exists) {
@@ -51,7 +58,14 @@ export async function verifyFirebaseToken(req) {
     error.statusCode = 401;
     throw error;
   }
-  const decoded = await admin.auth().verifyIdToken(token);
+  let decoded;
+  try {
+    decoded = await admin.auth().verifyIdToken(token);
+  } catch {
+    const error = new Error("Invalid or expired auth token");
+    error.statusCode = 401;
+    throw error;
+  }
   return {
     uid: decoded.uid,
     email: decoded.email,

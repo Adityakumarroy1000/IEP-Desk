@@ -7,6 +7,25 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import { ProfileProvider } from "./context/ProfileContext.jsx";
 import AppErrorBoundary from "./components/ui/AppErrorBoundary.jsx";
 
+if (typeof window !== "undefined") {
+  window.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+  });
+
+  window.addEventListener("keydown", (event) => {
+    const key = String(event.key || "").toLowerCase();
+    const isInspectShortcut =
+      key === "f12" ||
+      (event.ctrlKey && event.shiftKey && (key === "i" || key === "j" || key === "c")) ||
+      (event.ctrlKey && key === "u");
+
+    if (isInspectShortcut) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  });
+}
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AppErrorBoundary>

@@ -72,15 +72,20 @@ export default function Analyzer() {
 
   useEffect(() => {
     const load = async () => {
-      if (!profiles.length) {
-        const data = await api.get("/profile");
-        setProfiles(data || []);
-        if (data?.length) {
-          const preferredProfileId = queryProfileId && data.some((item) => item._id === queryProfileId)
-            ? queryProfileId
-            : data[0]._id;
-          setActiveProfileId(preferredProfileId);
+      try {
+        if (!profiles.length) {
+          const data = await api.get("/profile");
+          const normalizedProfiles = asArray(data?.profiles ?? data);
+          setProfiles(normalizedProfiles);
+          if (normalizedProfiles.length) {
+            const preferredProfileId = queryProfileId && normalizedProfiles.some((item) => item._id === queryProfileId)
+              ? queryProfileId
+              : normalizedProfiles[0]._id;
+            setActiveProfileId(preferredProfileId);
+          }
         }
+      } catch (err) {
+        setError(err?.message || "Failed to load profiles.");
       }
     };
     load();
@@ -116,7 +121,8 @@ export default function Analyzer() {
     multiple: false
   });
 
-  const loadSavedAnalyses = useCallback(async (profileId) => {
+  const loadSavedAnalyses = useCallback(async (profileId, options = {}) => {
+    const forceSelectLatest = Boolean(options.forceSelectLatest);
     if (!profileId) {
       setSavedAnalyses([]);
       setSelectedAnalysisId("");
@@ -136,6 +142,10 @@ export default function Analyzer() {
       setSavedAnalyses(normalized);
       if (normalized.length) {
         setLatestAnalysisId(normalized[0]._id);
+        if (forceSelectLatest) {
+          setSelectedAnalysisId(normalized[0]._id);
+          return;
+        }
         setSelectedAnalysisId((current) => (
           queryAnalysisId && normalized.some((item) => item._id === queryAnalysisId)
             ? queryAnalysisId
@@ -158,7 +168,8 @@ export default function Analyzer() {
     }
   }, [api, isViewAllMode, profiles, queryAnalysisId]);
 
-  const loadAllAnalyses = useCallback(async (profileList) => {
+  const loadAllAnalyses = useCallback(async (profileList, options = {}) => {
+    const forceSelectLatest = Boolean(options.forceSelectLatest);
     if (!profileList.length) {
       setSavedAnalyses([]);
       setSelectedAnalysisId("");
@@ -189,6 +200,10 @@ export default function Analyzer() {
       setSavedAnalyses(merged);
       if (merged.length) {
         setLatestAnalysisId(merged[0]._id);
+        if (forceSelectLatest) {
+          setSelectedAnalysisId(merged[0]._id);
+          return;
+        }
         setSelectedAnalysisId((current) => (
           queryAnalysisId && merged.some((item) => item._id === queryAnalysisId)
             ? queryAnalysisId
@@ -256,7 +271,7 @@ export default function Analyzer() {
       formData.append("extractedText", extractedText);
       const payload = await api.post("/analyze", formData);
       setResult(normalizeAnalysisResult(parsePossibleJson(payload)));
-      await loadSavedAnalyses(activeProfileId);
+      await loadSavedAnalyses(activeProfileId, { forceSelectLatest: true });
     } catch (err) {
       setError(err.message || "Failed to analyze");
     } finally {
@@ -320,7 +335,7 @@ export default function Analyzer() {
                   <span className="mb-2 block text-sm text-gray-600">Step 1: Select Profile</span>
                   <select className="w-full rounded-lg border border-gray-300 px-4 py-3" value={activeProfileId || ""} onChange={(e) => setActiveProfileId(e.target.value)}>
                     <option value="">Select child profile</option>
-                    {profiles.map((p) => (
+                    {asArray(profiles).map((p) => (
                       <option key={p._id} value={p._id}>{p.childName} - {p.grade}</option>
                     ))}
                   </select>
@@ -374,7 +389,7 @@ export default function Analyzer() {
                       onChange={(e) => setAnalysisFilterProfileId(e.target.value)}
                     >
                       <option value="all">All Analyses</option>
-                      {profiles.map((profileItem) => (
+                      {asArray(profiles).map((profileItem) => (
                         <option key={profileItem._id} value={profileItem._id}>
                           {profileItem.childName}
                         </option>

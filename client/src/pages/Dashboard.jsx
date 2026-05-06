@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Navbar from "../components/layout/Navbar.jsx";
 import PageWrapper from "../components/layout/PageWrapper.jsx";
 import Card from "../components/ui/Card.jsx";
@@ -10,6 +10,10 @@ import { useProfile } from "../hooks/useProfile.js";
 import { useAuth } from "../hooks/useAuth.js";
 import { FileText, ShieldCheck, MessageSquareText } from "lucide-react";
 
+const asArray = (value) => (Array.isArray(value) ? value : []);
+const DASHBOARD_CACHE_KEY = "iep_dashboard_cache_v1";
+const DASHBOARD_CACHE_TTL_MS = 2 * 60 * 1000;
+
 export default function Dashboard() {
   const api = useApi();
   const { user } = useAuth();
@@ -17,46 +21,97 @@ export default function Dashboard() {
   const [analyses, setAnalyses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [meetingPreps, setMeetingPreps] = useState([]);
+  const [error, setError] = useState("");
+  const initialActiveProfileIdRef = useRef(activeProfileId);
 
   useEffect(() => {
+    let hasFreshCache = false;
+    try {
+      const raw = sessionStorage.getItem(DASHBOARD_CACHE_KEY);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        const isFresh = Date.now() - Number(cached?.updatedAt || 0) < DASHBOARD_CACHE_TTL_MS;
+        if (isFresh) {
+          const cachedProfiles = asArray(cached?.profiles);
+          const cachedAnalyses = asArray(cached?.analyses);
+          const cachedMeetingPreps = asArray(cached?.meetingPreps);
+          const cachedActiveProfileId = cached?.activeProfileId || null;
+          setProfiles(cachedProfiles);
+          setAnalyses(cachedAnalyses);
+          setMeetingPreps(cachedMeetingPreps);
+          if (cachedActiveProfileId) setActiveProfileId(cachedActiveProfileId);
+          hasFreshCache = true;
+          setLoading(false);
+        }
+      }
+    } catch {
+      sessionStorage.removeItem(DASHBOARD_CACHE_KEY);
+    }
+
     const load = async () => {
       try {
+        setError("");
         const profileData = await api.get("/profile");
-        setProfiles(profileData || []);
-        if (!activeProfileId && profileData?.length) {
-          setActiveProfileId(profileData[0]._id);
+        const normalizedProfiles = asArray(profileData?.profiles ?? profileData);
+        setProfiles(normalizedProfiles);
+        if (!initialActiveProfileIdRef.current && normalizedProfiles.length) {
+          setActiveProfileId(normalizedProfiles[0]._id);
         }
-        if (profileData?.length) {
-          const list = await api.get(`/analyze/${profileData[0]._id}`);
-          setAnalyses(list || []);
-          
-          // Load meeting preps for dashboard
-          const meetingPrepsList = await api.get(`/meeting-prep/${profileData[0]._id}`);
-          setMeetingPreps(meetingPrepsList || []);
+        if (normalizedProfiles.length) {
+          const list = await api.get(`/analyze/${normalizedProfiles[0]._id}`);
+          const normalizedAnalyses = asArray(list?.analyses ?? list);
+          setAnalyses(normalizedAnalyses);
+
+          const meetingPrepsList = await api.get(`/meeting-prep/${normalizedProfiles[0]._id}`);
+          const normalizedMeetingPreps = asArray(meetingPrepsList?.meetingPreps ?? meetingPrepsList);
+          setMeetingPreps(normalizedMeetingPreps);
+          sessionStorage.setItem(
+            DASHBOARD_CACHE_KEY,
+            JSON.stringify({
+              profiles: normalizedProfiles,
+              analyses: normalizedAnalyses,
+              meetingPreps: normalizedMeetingPreps,
+              activeProfileId: initialActiveProfileIdRef.current || normalizedProfiles[0]?._id || null,
+              updatedAt: Date.now()
+            })
+          );
+        } else {
+          sessionStorage.setItem(
+            DASHBOARD_CACHE_KEY,
+            JSON.stringify({
+              profiles: normalizedProfiles,
+              analyses: [],
+              meetingPreps: [],
+              activeProfileId: null,
+              updatedAt: Date.now()
+            })
+          );
         }
       } catch (err) {
-        console.error(err);
+        setError(err?.message || "Failed to load dashboard data.");
       } finally {
-        setLoading(false);
+        if (!hasFreshCache) setLoading(false);
       }
     };
     load();
   }, []);
 
   const activeProfile = profiles.find((p) => p._id === activeProfileId) || profiles[0];
-
-  const recent = analyses?.slice(0, 3) || [];
+  const recent = asArray(analyses).slice(0, 3);
 
   return (
     <div className="min-h-screen page-bg">
       <Navbar />
-      <PageWrapper title={`Welcome${user?.displayName ? `, ${user.displayName}` : ""}`}
-        actions={null}
-      >
+      <PageWrapper title={`Welcome${user?.displayName ? `, ${user.displayName}` : ""}`} actions={null}>
         {loading ? (
           <Spinner label="Loading dashboard" />
         ) : (
           <div className="grid gap-6">
+            {error && (
+              <Card className="border-red-200 bg-red-50">
+                <p className="text-sm text-red-700">{error}</p>
+              </Card>
+            )}
             <div className="grid gap-4 md:grid-cols-3">
               <QuickActionCard
                 title="Analyze IEP"
@@ -82,7 +137,7 @@ export default function Dashboard() {
             </div>
             {activeProfile ? (
               <div className="grid gap-3">
-                {profiles.length > 1 ? (
+                {asArray(profiles).length > 1 ? (
                   <Card className="bg-white/80">
                     <label className="block text-sm text-gray-700">
                       <span className="mb-2 block text-sm text-gray-600">Active Child</span>
@@ -91,7 +146,7 @@ export default function Dashboard() {
                         value={activeProfileId || activeProfile._id}
                         onChange={(e) => setActiveProfileId(e.target.value)}
                       >
-                        {profiles.map((p) => (
+                        {asArray(profiles).map((p) => (
                           <option key={p._id} value={p._id}>
                             {p.childName} ({p.grade} - {p.state})
                           </option>
@@ -139,7 +194,7 @@ export default function Dashboard() {
                 <h3 className="text-lg font-semibold text-gray-800">Recent Meeting Preps</h3>
               </div>
               <div className="mt-4 space-y-2 text-sm text-gray-600">
-                {meetingPreps.length ? meetingPreps.map((prep) => (
+                {asArray(meetingPreps).length ? asArray(meetingPreps).map((prep) => (
                   <div key={prep._id} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white/70 px-3 py-2">
                     <div>
                       <div className="font-semibold text-gray-800">{prep.meetingType || "Meeting Prep"}</div>
